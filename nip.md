@@ -279,11 +279,11 @@ One such validator can be very simply implemented:
 >
 > ---
 
-### 11.3. Userland NIP Implementations
+### 11.4. Userland NIP Implementations
 
 Some NIPs can be implemented via validators, this shows that implementing this NIP could transfer protocol maintainability and specialization to the user base, without losing the unicity of specification since validator events are immutable.
 
-#### 11.3.1. NIP-13: Proof of Work
+#### 11.4.1. NIP-13: Proof of Work
 
 A Proof-of-Work validator can be very simply coded thusly:
 
