@@ -15,7 +15,6 @@
   - [7.2. Invalid Validators](#72-invalid-validators)
   - [7.3. Runtime Context](#73-runtime-context)
     - [7.3.1. The `nostr_ro` Capability](#731-the-nostr_ro-capability)
-  - [7.4. Reflective Validation](#74-reflective-validation)
 - [8. Relay Behavior](#8-relay-behavior)
   - [8.1. NIP-11 Extra Fields](#81-nip-11-extra-fields)
   - [8.2. NIP-20 Command Results](#82-nip-20-command-results)
@@ -175,32 +174,6 @@ Of course, each validator language will demand their own calling conventions and
 
 This capability allows for validators to perform introspection on the NOSTR network.
 
-### 7.4. Reflective Validation
-
-When searching for the event ID mentioned in a validator tag, the current event is considered "known".
-What this means is that a validator may declare itself as its validator.
-
-For example:
-
-```json
-{
-  "id": "0123456789abcdef0123456789abcdef",
-  "pubkey": "fedcba9876543210fedcba9876543210",
-  "created_at": 1234567890,
-  "kind": 1111,
-  "tags": [
-    ["validator-language", "javascript"],
-    ["v", "0123456789abcdef0123456789abcdef"]
-  ],
-  "content": "return true;",
-  "sig": "0123456789abcdef0123456789abcdeffedcba9876543210fedcba9876543210"
-}
-```
-
-Notice how the value of the event's `id` field (ie. `"0123456789abcdef0123456789abcdef"`) equals the value of the `"v"` tag, effectively indicating that this validator should validate itself.
-
-Although this may appear perplexing, it allows for code-introspection validators to apply their guarantees to themselves (see the [Validator Code Pinning](#113-validator-code-pinning) examples for a particular use case).
-
 ## 8. Relay Behavior
 
 Validation is completely optional for relays, they're free to ignore it and forward events along without validating.
@@ -338,8 +311,6 @@ Validator Code Pinning refers to the act of storing the same validator code in m
 
 This makes it easier to interoperate, since the code itself can be held at a "customary" location (GitHub, GitLab, IPFS, etc.), while the actual validator event lives in the NOSTR network.
 A validator performing code pinning would take the "customary" location as an additional parameter, and would be applied to events of kind `1111` (ie. to validators themselves).
-
-Incidentally, this would be a perfect use case for [Reflective Validation](#74-reflective-validation).
 
 One such validator can be very simply implemented:
 
