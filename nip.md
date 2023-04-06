@@ -312,6 +312,10 @@ By providing the validator's event ID and tag number, the validator can look int
 
 This allows a client to construct an event that will forward different parameters to different validators, were we not to have this, we would need to find another place to put these and this would require either encroaching into the `content` field or defining a new field to hold these.
 
+**Can the same validator be specified more than once?**
+
+Indeed, but doing so without varying the additional arguments given in each case would be pointless, and can in fact be optimized away by complying agents.
+
 **Can the validators be run in parallel?**
 
 Absolutely.
