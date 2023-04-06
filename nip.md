@@ -389,7 +389,7 @@ The available `<LANGUAGE_PARAMETERS>` are:
 
 Event inputs should be passed as nested Lua tables:
 
-```json
+```lua
 {<EVENT>, <VALIDATOR_ID>, <VALIDATION_NUMBER>}
 ```
 
