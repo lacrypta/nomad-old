@@ -4,6 +4,35 @@
 
 ---
 
+1. [Motivation](#1-motivation)
+2. [Short Description](#2-short-description)
+3. [Overview](#3-overview)
+4. [Glossary](#4-glossary)
+5. [Validator Event](#5-validator-event)
+6. [Validator Tag](#6-validator-tag)
+7. [Validation](#7-validation)
+    1. [Unknown Validators](#71-unknown-validators)
+    2. [Invalid Validators](#72-invalid-validators)
+    3. [Runtime Context](#73-runtime-context)
+        1. [The `nostr_ro` Capability](#731-the-nostr_ro-capability)
+    4. [Reflective Validation](#74-reflective-validation)
+8. [Relay Behavior](#8-relay-behavior)
+    1. [NIP-11 Extra Fields](#81-nip-11-extra-fields)
+    2. [NIP-20 Command Results](#82-nip-20-command-results)
+9. [Client Behavior](#9-client-behavior)
+10. [Examples](#10-examples)
+11. [Use Cases](#11-use-cases)
+    1. [Oracles](#111-oracles)
+    2. [Blockchain](#112-blockchain)
+    3. [Validator Code Pinning](#113-validator-code-pinning)
+    4. [Userland NIP Implementations](#114-userland-nip-implementations)
+        1. [NIP-13: Proof of Work](#1141-nip-13-proof-of-work)
+12. [FAQ](#12-faq)
+13. [Appendixes](#13-appendixes)
+    1. [Recognized `validator-language` Tags](#131-recognized-validator-language-tags)
+        1. [JavaScript](#1311-javascript)
+        2. [Lua](#1312-lua)
+
 ---
 
 ## 1. Motivation
