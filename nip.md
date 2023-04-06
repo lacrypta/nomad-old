@@ -1,0 +1,364 @@
+# NIP-XX
+
+> The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**,  **MAY**, and **OPTIONAL** in this document are to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt).
+
+---
+
+---
+
+## 1. Motivation
+
+The purpose of this NIP is to provide a framework for broadcasting immutable code blocks that will act as validators, and for specific events to declare which of these code blocks to use to validate itself.
+
+## 2. Short Description
+
+The underlying motivation is to bring a form of smart contracts to NOSTR, but the realities of a smart contract blockchain (eg. Ethereum) and NOSTR are quite different.
+
+Firstly, we require the actual code of these smart contracts to be held somewhere.
+Thus, we reserve a new kind to that effect and stipulate that the `content` field must then contain the source code itself.
+Since we don't want to restrict ourselves to a specific programming language, a new ("long-form") tag is defined that will declare the language used, and since several languages can be further tailored by tweaking their parameters, such tag is allowed to communicate those parameters as wel.
+
+Now that we have a place to store our code, we need to find a way to actually use it.
+The way in which we do this is by defining a new ("short-form") tag that will contain an event ID indicating the event where the code to execute resides (we will require the event ID mentioned in such tags to be of the newly reserved kind mentioned above).
+One can have several such tags, indicating that several code blocks should be executed for this event, and they will be executed in the order given.
+Lastly, each tag can carry additional input parameters for the code block referred to, this is so that parameters intended for one code block but not another can have a place to rest.
+
+Finally, we need to define how those code blocks are executed and what the effects of doing so are.
+This is the trickiest part, since we allow for different source code languages, and each language has their specific quirks, thus, we'll need to define "execution conventions" for each language officially supported.
+Whatever the specific conventions for each language are, we shall stipulate that the code block will receive the whole event as input, and we expect it to return either `true` or `false`.
+The significance of this return value will be: a `true` value attests that the message is "valid", while a `false` value declares it "invalid".
+Thus, we shall call these code blocks **validators**.
+
+Clients are free to ignore validator return value, call them discretionally, or not even call them at all, they're strictly optional and simply serve the purpose of stating that an event adheres to an unchanging validation algorithm.
+
+This decentralized and asynchronous execution model does have some caveats though: since a validator's code could in principle be run several times by different users, validators need to be "read-only", ie. they should not cause any side effects, for they would be realized an unpredictable number of times.
+
+## 3. Overview
+
+This document is organized as follows: first we introduce some terms we shall use further down in a Glossary, next we describe the Validator Event this NIP introduces, along with its language tag, next the Validator Tag used in events to be validated is presented, next the Validation procedure is explained, and finally Relay Behavior and Client Behavior are discussed.
+We close with Examples, proposed Use Cases and a FAQ section.
+Finally, appendixes follow to deal with technical aspects.
+
+## 4. Glossary
+
+**Agent:** either a NOSTR Client or NOSTR Relay.
+
+**Validator:** a piece of code accepting a NOSTR event as input and returning either `true` or `false` (observing the convention of the source code's language).
+
+**Language Tag:** a NOSTR tag attached to a Validator Event used to indicate the programming language used.
+
+**Validator Event:** a NOSTR event containing a Validator and its corresponding Language Tag.
+
+**Validator Tag:** a NOSTR tag attached to an event indicating the Validator Event to use.
+
+**Validating:** the act of running a Validator against an event.
+
+## 5. Validator Event
+
+A _validator event_ is defined as an event with kind `1111`.
+
+A validator event's `tags` field **MUST** include ONE AND ONLY ONE `validator-language` tag, conforming to the following format:
+
+```json
+["validator-language", <LANGUAGE>, <LANGUAGE_PARAMETERS>...]
+```
+
+The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones listed in [Appendix 13](#131-recognized-validator-language-tags); although clients and relays can support languages not explicitly listed therein, and said list may be expanded upon at a later time.
+
+The `<LANGUAGE_PARAMETERS>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary values; if given, though, they **SHOULD** correspond to those specified in [Appendix 13](#131-recognized-validator-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
+
+A validator event's `content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `validator-language` tag, according to any `<LANGUAGE_PARAMETERS>` provided.
+
+Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) validator events should be stored and **MUST NOT** be replaced at all.
+
+## 6. Validator Tag
+
+A _validator tag_ is a NOSTR tag using the single-letter **`v`** conforming to the following format:
+
+```json
+["v", <VALIDATOR_EVENT_ID>, <ADDITIONAL_ARGUMENTS>...]
+```
+
+The `<VALIDATOR_EVENT_ID>` **MUST** belong to an event of kind `1111`.
+
+The `<ADDITIONAL_ARGUMENTS>` **MAY** be omitted altogether if not needed.
+
+More than one validator tag can be attached to an event.
+
+## 7. Validation
+
+Validating an event consists of retrieving all of its validator tags and executing the corresponding validators in the order they appear.
+To do this, agents should query for the event ID mentioned in the validator tag, read the `validator-language` tag to ensure support, and load the `content` field as source code to be executed.
+
+With the set up taken care of, the source code will get passed the following values in order:
+
+1. the whole event being validated,
+2. the validator event ID being evaluated, and
+3. a number indicating which validator tag is being executed.
+
+The validator source code is now run and its return value obtained: if the return value represents a `true` value, the event is said to have _passed_ validation, if the return values represents a `false` value, the event is said to have _failed_ validation.
+
+If all validator tags have been executed and passed, the whole event is said to have passed validation, otherwise, the event as a whole is said to have failed validation.
+
+In order to pass the event and validation run number to the validator, and retrieve the validator's result, conversion procedures need to be defined for each supported language (see [Appendix 13](#131-recognized-validator-language-tags) for details regarding the ones defined in this NIP).
+
+### 7.1. Unknown Validators
+
+If the validator tag refers to an irretrievable event ID, that specific validation is said to be _unreachable_. An event whose validator tags have all either passed validation or found to be unreachable is said to have _incomplete_ validation.
+
+Agents are free to determine how such an event must be handled, they can either consider incomplete validation to be a failure or a success.
+
+### 7.2. Invalid Validators
+
+If the validator tag refers to an event not of kind `1111`, or contains an invalid `validator-language` tag, that validator tag is said to be invalid and considered to have _failed_ validation.
+
+### 7.3. Runtime Context
+
+During the execution of the validator code proper, agents **MAY** provide additional capabilities for the code to use.
+These can range from utility libraries (eg. JSON parsing utilities) to external communication facilities (eg. querying [IPFS](https://docs.ipfs.tech/)).
+
+#### 7.3.1. The `nostr_ro` Capability
+
+Agents **MUST** provide validators with a NOSTR querying facility identified with `nostr_ro` that will accept a [`REQ` filter specification](https://github.com/nostr-protocol/nips/blob/master/01.md#from-client-to-relay-sending-events-and-creating-subscriptions) and retrieve the results without establishing a subscription.
+The pseudocode for such a capability call would look like:
+
+```text
+nostr_ro(<FILTER_1>, <FILTER_2>, ..., <FILTER_N>)
+```
+
+(where filters `<FILTER_2>` onwards are optional) and the return value would look like:
+
+```text
+[<EVENT_1>, <EVENT_2>, ..., <EVENT_N>]
+```
+
+Of course, each validator language will demand their own calling conventions and specifics, as will specify the actual result values.
+
+This capability allows for validators to perform introspection on the NOSTR network.
+
+### 7.4. Reflective Validation
+
+When searching for the event ID mentioned in a validator tag, the current event is considered "known".
+What this means is that a validator may declare itself as its validator.
+
+For example:
+
+```json
+{
+  "id": "0123456789abcdef0123456789abcdef",
+  "pubkey": "fedcba9876543210fedcba9876543210",
+  "created_at": 1234567890,
+  "kind": 1111,
+  "tags": [
+    ["validator-language", "javascript"],
+    ["v", "0123456789abcdef0123456789abcdef"]
+  ],
+  "content": "return true;",
+  "sig": "0123456789abcdef0123456789abcdeffedcba9876543210fedcba9876543210"
+}
+```
+
+Notice how the value of the event's `id` field (ie. `"0123456789abcdef0123456789abcdef"`) equals the value of the `"v"` tag, effectively indicating that this validator should validate itself.
+
+Although this may appear perplexing, it allows for code-introspection validators to apply their guarantees to themselves (see the [Validator Code Pinning](#113-validator-code-pinning) examples for a particular use case).
+
+## 8. Relay Behavior
+
+Validation is completely optional for relays, they're free to ignore it and forward events along without validating.
+
+Having said that, relays **MAY** opt to validate incoming events.
+If so doing, they're free to apply whatever policy they see fit; they may for example only execute certain "known" validators, require a POW field to execute, demand payment in exchange for execution, or just run simple validations ensuring that validator tags are themselves valid.
+
+If, however, a relay DOES opt to validate an incoming event, it **MUST** adhere to the following rules:
+
+1. Upon encountering an [Invalid Validator](#72-invalid-validators) the relay **MUST** drop the event and not forward it.
+2. Upon encountering an [Unknown Validator](#71-unknown-validators) the relay **MUST NOT** drop the event and **SHOULD** forward it.
+3. If any of the validator tags the relay chooses to execute fails, the relay **MUST** drop the event and not forward it.
+
+### 8.1. NIP-11 Extra Fields
+
+Relays choosing to validate incoming events **MAY** advertise so in the response of a [NIP-11](https://github.com/nostr-protocol/nips/blob/master/11.md) query.
+
+This entails adding the current NIP number to the `supported_nips` field and possibly including the following extra field in the response:
+
+```json
+{
+  ...
+  "validation": {
+    "whitelisted": [<EVENT_ID_1>, <EVENT_ID_2>, ..., <EVENT_ID_N>],
+    "blacklisted": [<EVENT_ID_1>, <EVENT_ID_2>, ..., <EVENT_ID_N>],
+    "timeout": <TIMEOUT_IN_MS>,
+    "max_qty": <QUANTITY>,
+    "languages": {
+      <LANGUAGE>: {
+        "parameters": [<LANGUAGE_PARAMETER_1>, <LANGUAGE_PARAMETER_2>, ..., <LANGUAGE_PARAMETER_N>],
+        "capabilities": [<CAPABILITY_1>, <CAPABILITY_2>, ..., <CAPABILITY_N>]
+      },
+      ...
+    },
+    "policy_id": <POLICY_ID>,
+    "policy_URI": <POLICY_URI>
+  }
+  ...
+}
+```
+
+Their intended meanings are as follows:
+
+- **`whitelisted`:** a list of event IDs for validator events the relay ensures knows about and is willing to execute,
+- **`blacklisted`:** a list of event IDs for validator events the relay will never execute,
+- **`timeout`:** the number of milliseconds the relay is willing to wait for a single validator execution,
+- **`max_qty`:** the maximum number of validators the relay is willing to execute per event,
+- **`languages`:** a mapping stating the validator languages the relay is willing to accept; each defines a nested mapping with details:
+  - **`parameters`:** the language parameters applicable to the language in question,
+  - **`capabilities`:** the capabilities the relay exposes to the validators execution environment,
+- **`policy_uri`:** a URI pointing to the detailed policy text.
+
+Note though that the extremely optional nature of relay validation means that relays are not required to adhere to any of the statements in the presented fields, they're merely informative and not prescriptive in any way.
+
+### 8.2. NIP-20 Command Results
+
+If a relay chooses to validate incoming events and already implements [NIP-20](https://github.com/nostr-protocol/nips/blob/master/20.md), they **SHOULD** respond with the following format when failing validation:
+
+```json
+["OK", <EVENT_ID>, false, "invalid: ..."]
+```
+
+Additionally, upon a relay encountering any [Unknown Validators](#71-unknown-validators) listed in the event's tags, it **SHOULD** respond with format:
+
+```json
+["OK", <EVENT_ID>, true, "invalid: some unknown validators found [<UNKNOWN_VALIDATOR_1>, <UNKNOWN_VALIDATOR_2>, ..., <UNKNOWN_VALIDATOR_N>]"]
+```
+
+## 9. Client Behavior
+
+Supporting clients **MUST** validate incoming events, although they may do so either _eagerly_ or _lazily_ upon the user's request.
+
+[Invalid Validators](#72-invalid-validators) should be treated as failing validation.
+[Unknown Validators](#71-unknown-validators) should be flagged and the user should decide what should be done then.
+
+## 10. Examples
+
+## 11. Use Cases
+
+In what follows, we'll look at some use cases for NOSTR validators.
+
+### 11.1. Oracles
+
+NOSTR can be greatly extended by providing oracles tying an event's validity to the outside world (care must be taken though to prevent the result from one such validation from changing in time, since validation occurs multiple times, it would lead to events being valid or invalid depending on the moment in time in which they occur... on the other hand, ephemeral events could very well use this very property... the mind boggles).
+
+By way of example, we present here a validator that will ensure the Bitcoin network has reached the given block height:
+
+> ---
+> TODO
+>
+> ---
+
+### 11.2. Blockchain
+
+Although engineering a complete blockchain full with edge case defenses and future-proof security is perhaps beyond the scope of this NIP, a simple blockchain can indeed be implemented rather simply with validators.
+
+> ---
+> TODO
+>
+> ---
+
+### 11.3. Validator Code Pinning
+
+Validator Code Pinning refers to the act of storing the same validator code in more than one place, and having a validator check that those two places do indeed contain the same code.
+
+This makes it easier to interoperate, since the code itself can be held at a "customary" location (GitHub, GitLab, IPFS, etc.), while the actual validator event lives in the NOSTR network.
+A validator performing code pinning would take the "customary" location as an additional parameter, and would be applied to events of kind `1111` (ie. to validators themselves).
+
+Incidentally, this would be a perfect use case for [Reflective Validation](#74-reflective-validation).
+
+One such validator can be very simply implemented:
+
+> ---
+> TODO
+>
+> ---
+
+### 11.3. Userland NIP Implementations
+
+Some NIPs can be implemented via validators, this shows that implementing this NIP could transfer protocol maintainability and specialization to the user base, without losing the unicity of specification since validator events are immutable.
+
+#### 11.3.1. NIP-13: Proof of Work
+
+A Proof-of-Work validator can be very simply coded thusly:
+
+> ---
+> TODO
+>
+> ---
+
+## 12. FAQ
+
+**Why use a single-letter tag (ie. `"v"`) for validator tags?**
+
+The reason behind this is twofold:
+
+- on the one hand, this allows for clients to build a `REQ` query restricting themselves to events validated by specific validators, improving efficiency on the client side,
+- on the other hand, it allows validators to be freely composed via the `nostr_ro` capability: a validator can look for events referring the one being validated that are themselves validated by a specific validators.
+
+Were we not to use a single-letter tag, filtering out the results client-side could be time consuming and cumbersome.
+
+**Why does the validator get passed the validator event ID and tag number?**
+
+This is so so that a validator can "find itself" in the event being validated.
+By providing the validator's event ID and tag number, the validator can look into the event's tags for the one being processed, verify that the associated event ID is its own, and pick up the additional arguments therein.
+
+**What's the use of the validator tag `<ADDITIONAL_ARGUMENTS>` placeholder?**
+
+This allows a client to construct an event that will forward different parameters to different validators, were we not to have this, we would need to find another place to put these and this would require either encroaching into the `content` field or defining a new field to hold these.
+
+**Can the validators be run in parallel?**
+
+Absolutely.
+Validators **MUST** be ["functionally pure"](https://en.wikipedia.org/wiki/Pure_function) in the sense that they should cause no state change whatsoever other than those implied by an event being valid or not.
+
+## 13. Appendixes
+
+## 13.1. Recognized `validator-language` Tags
+
+The current NIP recognizes the following languages and their corresponding parameters for usage in the `validator-language` tag.
+
+### 13.1.1. JavaScript
+
+The `<LANGUAGE>` placeholder **MUST** be `"javascript"`.
+
+The available `<LANGUAGE_PARAMETERS>` are:
+
+> ---
+> TODO
+>
+> ---
+
+Event inputs should be passed as the result of deserializing the JSON value:
+
+```json
+[<EVENT>, <VALIDATOR_ID>, <VALIDATION_NUMBER>]
+```
+
+and return values interpreted as JavaScript booleans.
+Uncaught exceptions are considered `false` return values, except during relay validation, where they're considered `true` return values.
+
+### 13.1.2. Lua
+
+The `<LANGUAGE>` placeholder **MUST** be `"lua"`.
+
+The available `<LANGUAGE_PARAMETERS>` are:
+
+> ---
+> TODO
+>
+> ---
+
+Event inputs should be passed as nested Lua tables:
+
+```json
+{<EVENT>, <VALIDATOR_ID>, <VALIDATION_NUMBER>}
+```
+
+and return values interpreted as Lua booleans.
+Uncaught exceptions are considered `false` return values, except during relay validation, where they're considered `true` return values.
