@@ -89,7 +89,12 @@ A _validator event_ is defined as an event with kind `1111`.
 A validator event's `tags` field **MUST** include ONE AND ONLY ONE `validator-language` tag, conforming to the following format:
 
 ```json
-["validator-language", <LANGUAGE>, <LANGUAGE_PARAMETERS>...]
+[
+  "validator-language",
+  <LANGUAGE>,
+  <LANGUAGE_PARAMETERS>,
+  ...
+]
 ```
 
 The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones listed in [Appendix 13](#131-recognized-validator-language-tags); although clients and relays can support languages not explicitly listed therein, and said list may be expanded upon at a later time.
@@ -105,7 +110,12 @@ Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/mast
 A _validator tag_ is a NOSTR tag using the single-letter **`v`** conforming to the following format:
 
 ```json
-["v", <VALIDATOR_EVENT_ID>, <ADDITIONAL_ARGUMENTS>...]
+[
+  "v",
+  <VALIDATOR_EVENT_ID>,
+  <ADDITIONAL_ARGUMENTS>,
+  ...
+]
 ```
 
 The `<VALIDATOR_EVENT_ID>` **MUST** belong to an event of kind `1111`.
@@ -214,14 +224,34 @@ This entails adding the current NIP number to the `supported_nips` field and pos
 {
   ...
   "validation": {
-    "whitelisted": [<EVENT_ID_1>, <EVENT_ID_2>, ..., <EVENT_ID_N>],
-    "blacklisted": [<EVENT_ID_1>, <EVENT_ID_2>, ..., <EVENT_ID_N>],
+    "whitelisted": [
+      <EVENT_ID_1>,
+      <EVENT_ID_2>,
+      ...,
+      <EVENT_ID_N>
+    ],
+    "blacklisted": [
+      <EVENT_ID_1>,
+      <EVENT_ID_2>,
+      ...,
+      <EVENT_ID_N>
+    ],
     "timeout": <TIMEOUT_IN_MS>,
     "max_qty": <QUANTITY>,
     "languages": {
       <LANGUAGE>: {
-        "parameters": [<LANGUAGE_PARAMETER_1>, <LANGUAGE_PARAMETER_2>, ..., <LANGUAGE_PARAMETER_N>],
-        "capabilities": [<CAPABILITY_1>, <CAPABILITY_2>, ..., <CAPABILITY_N>]
+        "parameters": [
+          <LANGUAGE_PARAMETER_1>,
+          <LANGUAGE_PARAMETER_2>,
+          ...,
+          <LANGUAGE_PARAMETER_N>
+        ],
+        "capabilities": [
+          <CAPABILITY_1>,
+          <CAPABILITY_2>,
+          ...,
+          <CAPABILITY_N>
+        ]
       },
       ...
     },
@@ -250,13 +280,23 @@ Note though that the extremely optional nature of relay validation means that re
 If a relay chooses to validate incoming events and already implements [NIP-20](https://github.com/nostr-protocol/nips/blob/master/20.md), they **SHOULD** respond with the following format when failing validation:
 
 ```json
-["OK", <EVENT_ID>, false, "invalid: ..."]
+[
+  "OK",
+  <EVENT_ID>,
+  false,
+  "invalid: ..."
+]
 ```
 
 Additionally, upon a relay encountering any [Unknown Validators](#71-unknown-validators) listed in the event's tags, it **SHOULD** respond with format:
 
 ```json
-["OK", <EVENT_ID>, true, "invalid: some unknown validators found [<UNKNOWN_VALIDATOR_1>, <UNKNOWN_VALIDATOR_2>, ..., <UNKNOWN_VALIDATOR_N>]"]
+[
+  "OK",
+  <EVENT_ID>,
+  true,
+  "invalid: some unknown validators found [<UNKNOWN_VALIDATOR_1>, <UNKNOWN_VALIDATOR_2>, ..., <UNKNOWN_VALIDATOR_N>]"
+]
 ```
 
 ## 9. Client Behavior
@@ -370,7 +410,11 @@ The available `<LANGUAGE_PARAMETERS>` are:
 Event inputs should be passed as the result of deserializing the JSON value:
 
 ```json
-[<EVENT>, <VALIDATOR_ID>, <VALIDATION_NUMBER>]
+[
+  <EVENT>,
+  <VALIDATOR_ID>,
+  <VALIDATION_NUMBER>
+]
 ```
 
 and return values interpreted as JavaScript booleans.
@@ -390,7 +434,11 @@ The available `<LANGUAGE_PARAMETERS>` are:
 Event inputs should be passed as nested Lua tables:
 
 ```lua
-{<EVENT>, <VALIDATOR_ID>, <VALIDATION_NUMBER>}
+{
+  <EVENT>,
+  <VALIDATOR_ID>,
+  <VALIDATION_NUMBER>
+}
 ```
 
 and return values interpreted as Lua booleans.
