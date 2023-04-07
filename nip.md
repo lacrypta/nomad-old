@@ -419,7 +419,8 @@ const difficulty = event.tags                         // although NIP-13 is uncl
   .reduce((prev, curr) => prev < curr ? curr : prev)  // increasing levels of difficulty, keeping only
 ;                                                     // the highest of them
 
-const leading0s = {                                               // this mapping simply stores how many leading 0s a particular hex digit represents
+// this mapping simply stores how many leading 0s a particular hex digit represents
+const leading0s = {
   '0': 4,
   '1': 3,
   '2': 2, '3': 2,
