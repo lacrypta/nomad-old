@@ -355,8 +355,8 @@ if (validatorTag[0] !== "v") {          // verify that we are indeed passed a va
 if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
   return false;                         // fail if we're not
 }
-if (event.kind !== 1111) {  // verify that we are indeed validating a validator
-  return false;             // fail if we're not
+if (event.kind !== 1111) {              // verify that we are indeed validating a validator
+  return false;                         // fail if we're not
 }
 
 const canonicalUrl = validatorTag[2];  // the canonical content URL is the next parameter
