@@ -381,10 +381,65 @@ Some NIPs can be implemented via validators, this shows that implementing this N
 
 A Proof-of-Work validator can be very simply coded thusly:
 
-> ---
-> TODO
->
-> ---
+```javascript
+const event = arguments[0];                  // get the event being validated
+const validatorId = arguments[1];            // get the validator event ID
+const runNumber = arguments[2];              // get the run number
+const validatorTag = event.tags[runNumber];  // extract the validator tag from the event
+
+if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
+  return false;                         // fail if we're not
+}
+
+const calculatedId = SHA256_AS_HEX_STRING(JSON.stringify([  // calculate the event ID according to NIP-1
+  0,
+  event.pubkey,
+  event.created_at,
+  event.kind,
+  event.tags,
+  event.content
+]));
+
+if (calculatedId !== event.id) {  // if the calculated ID and the event ID aren't equal,
+  return false;                   // then fail
+}
+
+const difficulty = event.tags                         // although NIP-13 is unclear as to how to manage
+  .filter(tag => tag[0] === "nonce")                  // multiple "nonce" tags, we take the conservative approach
+  .map(tag => tag[2])                                 // and consider multiple "nonce" tags as describing
+  .reduce((prev, curr) => prev < curr ? curr : prev)  // increasing levels of difficulty, keeping only
+;                                                     // the highest of them
+
+const leading0s = {                                               // this mapping simply stores how many leading 0s a particular hex digit represents
+  '0': 4,
+  '1': 3,
+  '2': 2, '3': 2,
+  '4': 1, '5': 1, '6': 1, '7': 1,
+  '8': 0, '9': 0, 'a': 0, 'b': 0, 'c': 0, 'd': 0, 'e': 0, 'f': 0
+};
+
+var num0s = 0;                               // calculate the number of leading 0s in the event ID
+for (let i = 0; i < event.id.length; i++) {
+  const currentDigit = event.id[i];
+  num0s += leading0s[currentDigit];
+  if (currentDigit !== '0') {
+    break;
+  }
+}
+
+return difficulty <= num0s;  // validate that the number of leading 0s is at least the difficulty
+```
+
+This validator can be used by simply mentioning the validator ID since all the data required for it to work is already present in the event itself:
+
+```json
+[
+  "v",
+  <VALIDATOR_ID>
+]
+```
+
+> Notice that the `JSON` object and a hypothetical `SHA256_AS_HEX_STRING` function need to be available in the execution environment where this is run.
 
 ## 12. FAQ
 
