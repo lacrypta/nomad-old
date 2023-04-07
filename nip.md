@@ -400,24 +400,27 @@ if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right v
   return false;                         // fail if we're not
 }
 
-const calculatedId = SHA256_AS_HEX_STRING(JSON.stringify([  // calculate the event ID according to NIP-1
-  0,
-  event.pubkey,
-  event.created_at,
-  event.kind,
-  event.tags,
-  event.content
-]));
+// calculate the event ID according to NIP-1
+const calculatedId = SHA256_AS_HEX_STRING(
+  JSON.stringify([
+    0,
+    event.pubkey,
+    event.created_at,
+    event.kind,
+    event.tags,
+    event.content
+  ])
+);
 
 if (calculatedId !== event.id) {  // if the calculated ID and the event ID aren't equal,
   return false;                   // then fail
 }
 
 const difficulty = event.tags                         // although NIP-13 is unclear as to how to manage
-  .filter(tag => tag[0] === "nonce")                  // multiple "nonce" tags, we take the conservative approach
-  .map(tag => tag[2])                                 // and consider multiple "nonce" tags as describing
-  .reduce((prev, curr) => prev < curr ? curr : prev)  // increasing levels of difficulty, keeping only
-;                                                     // the highest of them
+  .filter(tag => tag[0] === "nonce")                  // multiple "nonce" tags, we take the conservative
+  .map(tag => tag[2])                                 // approach and consider multiple "nonce" tags as
+  .reduce((prev, curr) => prev < curr ? curr : prev)  // describing differing levels of difficulty,
+;                                                     // keeping only the highest of them
 
 // this mapping simply stores how many leading 0s a particular hex digit represents
 const leading0s = {
@@ -428,12 +431,22 @@ const leading0s = {
   '8': 0, '9': 0, 'a': 0, 'b': 0, 'c': 0, 'd': 0, 'e': 0, 'f': 0
 };
 
-var num0s = 0;                               // calculate the number of leading 0s in the event ID
-for (let i = 0; i < event.id.length; i++) {
-  const currentDigit = event.id[i];
-  num0s += leading0s[currentDigit];
-  if (currentDigit !== '0') {
-    break;
+var num0s = 0;  // the number of leading 0s
+
+// break the ID into 32-bit blocks and fast-forward the count as long as they are 0
+fastForward: for (let i = 0, j = 0; j < 4; j++) {
+  if (0 !== parseInt(event.id.substring(i, i + 8), 16)) {
+    // deal with the non-0 block and terminate
+    for (; i < event.id.length; i++) {
+      const currentDigit = event.id[i];
+      num0s += leading0s[currentDigit];
+      if (currentDigit !== '0') {
+        break fastForward;
+      }
+    }
+  } else {
+    num0s += 32;
+    i+= 8;
   }
 }
 
