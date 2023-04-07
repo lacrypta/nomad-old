@@ -340,10 +340,38 @@ A validator performing code pinning would take the "customary" location as an ad
 
 One such validator can be very simply implemented:
 
-> ---
-> TODO
->
-> ---
+```javascript
+const event = arguments[0];                  // get the event being validated
+const validatorId = arguments[1];            // get the validator event ID
+const runNumber = arguments[2];              // get the run number
+const validatorTag = event.tags[runNumber];  // extract the validator tag from the event
+
+if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
+  return false;                         // fail if we're not
+}
+if (event.kind !== 1111) {  // verify that we are indeed validating a validator
+  return false;             // fail if we're not
+}
+
+const canonicalUrl = validatorTag[2];  // the canonical content URL is the next parameter
+
+const request = new XMLHttpRequest();           // build a new XMLHttpRequest
+request.open("GET", canonicalUrl, false);       // set up a synchronous GET request to the above URL
+request.send(null);                             // execute it
+return request.responseText === event.content;  // compare it against the event's content
+```
+
+In order to use this validator you can attach the following validator tag:
+
+```json
+[
+  "v",
+  <VALIDATOR_ID>,
+  <CANONICAL_URL>
+]
+```
+
+> Notice that the `XMLHttpRequest` object needs to be available in the execution environment where this is run.
 
 ### 11.4. Userland NIP Implementations
 
