@@ -291,10 +291,36 @@ NOSTR can be greatly extended by providing oracles tying an event's validity to 
 
 By way of example, we present here a validator that will ensure the Bitcoin network has reached the given block height:
 
-> ---
-> TODO
->
-> ---
+```javascript
+const event = arguments[0];                  // get the event being validated
+const validatorId = arguments[1];            // get the validator event ID
+const runNumber = arguments[2];              // get the run number
+const validatorTag = event.tags[runNumber];  // extract the validator tag from the event
+
+if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
+  return false;                         // fail if we're not
+}
+
+const expectedHeight = validatorTag[2];                                // the expected block height is the next parameter
+const url = `https://blockchain.info/block-height/${expectedHeight}`;  // the block-height query URL
+
+const request = new XMLHttpRequest();               // build a new XMLHttpRequest
+request.open("GET", url, false);                    // set up a synchronous GET request to the above URL
+request.send(null);                                 // execute it
+return request.responseText !== "{\"blocks\":[]}";  // compare it against the expected error response
+```
+
+One would use such a validator with the given validator tag:
+
+```json
+[
+  "v",
+  <VALIDATOR_ID>,
+  <EXPECTED_BLOCK_HEIGHT>
+]
+```
+
+> Notice that the `XMLHttpRequest` object needs to be available in the execution environment where this is run.
 
 ### 11.2. Blockchain
 
