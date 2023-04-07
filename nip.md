@@ -297,6 +297,9 @@ const validatorId = arguments[1];            // get the validator event ID
 const runNumber = arguments[2];              // get the run number
 const validatorTag = event.tags[runNumber];  // extract the validator tag from the event
 
+if (validatorTag[0] !== "v") {          // verify that we are indeed passed a validator tag
+  return false;                         // fail if we're not
+}
 if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
   return false;                         // fail if we're not
 }
@@ -346,6 +349,9 @@ const validatorId = arguments[1];            // get the validator event ID
 const runNumber = arguments[2];              // get the run number
 const validatorTag = event.tags[runNumber];  // extract the validator tag from the event
 
+if (validatorTag[0] !== "v") {          // verify that we are indeed passed a validator tag
+  return false;                         // fail if we're not
+}
 if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
   return false;                         // fail if we're not
 }
@@ -387,6 +393,9 @@ const validatorId = arguments[1];            // get the validator event ID
 const runNumber = arguments[2];              // get the run number
 const validatorTag = event.tags[runNumber];  // extract the validator tag from the event
 
+if (validatorTag[0] !== "v") {          // verify that we are indeed passed a validator tag
+  return false;                         // fail if we're not
+}
 if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
   return false;                         // fail if we're not
 }
