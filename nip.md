@@ -500,6 +500,14 @@ Event inputs should be passed as the result of deserializing the JSON value:
 and return values interpreted as JavaScript booleans.
 Uncaught exceptions are considered `false` return values, except during relay validation, where they're considered `true` return values.
 
+The execution environment will vary depending on the actual type of execution machine (ie. NodeJS vs browser-based), but the execution tactic should be compatible with extracting the value of the following expression:
+
+```javascript
+(new Function(event.content))(event, validatorId, validationNumber)
+```
+
+where `event`, `validatorId`, and `validationNumber` are as above.
+
 ### 13.1.2. Lua
 
 The `<LANGUAGE>` placeholder **MUST** be `"lua"`.
