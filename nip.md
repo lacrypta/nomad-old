@@ -481,7 +481,7 @@ Indeed, but doing so without varying the additional arguments given in each case
 **Can the validators be run in parallel?**
 
 Absolutely.
-Validators **MUST** be ["functionally pure"](https://en.wikipedia.org/wiki/Pure_function) in the sense that they should cause no state change whatsoever other than those implied by an event being valid or not.
+Validators **SHOULD** be ["functionally pure"](https://en.wikipedia.org/wiki/Pure_function) in the sense that they should cause no state change whatsoever other than those implied by an event being valid or not.
 
 ## 13. Appendixes
 
