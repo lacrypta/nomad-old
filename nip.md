@@ -90,16 +90,16 @@ A validator event's `tags` field **MUST** include ONE AND ONLY ONE `v-language` 
 [
   "v-language",
   <LANGUAGE>,
-  <LANGUAGE_PARAMETERS>,
+  <CAPABILITY>,
   ...
 ]
 ```
 
 The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones listed in [Appendix 13](#131-recognized-v-language-tags); although clients and relays can support languages not explicitly listed therein, and said list may be expanded upon at a later time.
 
-The `<LANGUAGE_PARAMETERS>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary values; if given, though, they **SHOULD** correspond to those specified in [Appendix 13](#131-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
+The `<CAPABILITY>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary strings; if given, though, they **SHOULD** correspond to those specified in [Appendix 13](#131-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
 
-A validator event's `content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `v-language` tag, according to any `<LANGUAGE_PARAMETERS>` provided.
+A validator event's `content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `v-language` tag, possibly making use of any `<CAPABILITY>` provided.
 
 Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) validator events should be stored and **MUST NOT** be replaced at all.
 
@@ -224,20 +224,10 @@ This entails adding the current NIP number to the `supported_nips` field and pos
     "timeout": <TIMEOUT_IN_MS>,
     "max_qty": <QUANTITY>,
     "languages": {
-      <LANGUAGE>: {
-        "parameters": [
-          <LANGUAGE_PARAMETER_1>,
-          <LANGUAGE_PARAMETER_2>,
-          ...,
-          <LANGUAGE_PARAMETER_N>
-        ],
-        "capabilities": [
-          <CAPABILITY_1>,
-          <CAPABILITY_2>,
-          ...,
-          <CAPABILITY_N>
-        ]
-      },
+      <LANGUAGE>: [
+          <CAPABILITY>,
+          ...
+      ],
       ...
     },
     "policy_id": <POLICY_ID>,
@@ -253,9 +243,7 @@ Their intended meanings are as follows:
 - **`blacklisted`:** a list of event IDs for validator events the relay will never execute,
 - **`timeout`:** the number of milliseconds the relay is willing to wait for a single validator execution,
 - **`max_qty`:** the maximum number of validators the relay is willing to execute per event,
-- **`languages`:** a mapping stating the validator languages the relay is willing to accept; each defines a nested mapping with details:
-  - **`parameters`:** the language parameters applicable to the language in question,
-  - **`capabilities`:** the capabilities the relay exposes to the validators execution environment,
+- **`languages`:** a mapping stating the validator languages the relay is willing to accept; each defines a list of capabilities the relay exposes to the validators execution environment,
 - **`policy_uri`:** a URI pointing to the detailed policy text.
 
 Note though that the extremely optional nature of relay validation means that relays are not required to adhere to any of the statements in the presented fields, they're merely informative and not prescriptive in any way.
@@ -309,6 +297,8 @@ NOSTR can be greatly extended by providing oracles tying an event's validity to 
 By way of example, we present here a validator that will ensure the Bitcoin network has reached the given block height:
 
 ```javascript
+// Requires "XMLHttpRequest" capability
+
 const event = arguments[0];                       // get the event being validated
 const validatorIndex = arguments[1];              // get the validator index
 const validatorTag = event.tags[validatorIndex];  // extract the validator tag from the event
@@ -336,8 +326,6 @@ One would use such a validator with the given validator tag:
 ]
 ```
 
-> Notice that the `XMLHttpRequest` object needs to be available in the execution environment where this is run.
-
 ### 11.2. Validator Code Pinning
 
 Validator Code Pinning refers to the act of storing the same validator code in more than one place, and having a validator check that those two places do indeed contain the same code.
@@ -348,6 +336,8 @@ A validator performing code pinning would take the "customary" location as an ad
 One such validator can be very simply implemented:
 
 ```javascript
+// Requires "XMLHttpRequest" capability
+
 const event = arguments[0];                       // get the event being validated
 const validatorIndex = arguments[1];              // get the validator index
 const validatorTag = event.tags[validatorIndex];  // extract the validator tag from the event
@@ -377,8 +367,6 @@ In order to use this validator you can attach the following validator tag:
 ]
 ```
 
-> Notice that the `XMLHttpRequest` object needs to be available in the execution environment where this is run.
-
 ### 11.3. Userland NIP Implementations
 
 Some NIPs can be implemented via validators, this shows that implementing this NIP could transfer protocol maintainability and specialization to the user base, without losing the unicity of specification since validator events are immutable.
@@ -388,6 +376,8 @@ Some NIPs can be implemented via validators, this shows that implementing this N
 A Proof-of-Work validator can be very simply coded thusly:
 
 ```javascript
+// Requires "SHA256" capability (hypothetically providing a "SHA256_AS_HEX_STRING()" function)
+
 const event = arguments[0];                       // get the event being validated
 const validatorIndex = arguments[1];              // get the validator index
 const validatorTag = event.tags[validatorIndex];  // extract the validator tag from the event
@@ -458,8 +448,6 @@ This validator can be used by simply mentioning the validator ID since all the d
 ]
 ```
 
-> Notice that the `JSON` object and a hypothetical `SHA256_AS_HEX_STRING` function need to be available in the execution environment where this is run.
-
 ## 12. FAQ
 
 **Why use a single-letter tag (ie. `"v"`) for validator tags?**
@@ -467,7 +455,7 @@ This validator can be used by simply mentioning the validator ID since all the d
 The reason behind this is twofold:
 
 - on the one hand, this allows for clients to build a `REQ` query restricting themselves to events validated by specific validators, improving efficiency on the client side,
-- on the other hand, it allows validators to be freely composed via the `nostr-ro` capability: a validator can look for events referring the one being validated that are themselves validated by a specific validators.
+- on the other hand, it allows validators to be freely composed via the `NostrRead` capability: a validator can look for events referring the one being validated that are themselves validated by a specific validators.
 
 Were we not to use a single-letter tag, filtering out the results client-side could be time consuming and cumbersome.
 
@@ -499,7 +487,7 @@ The current NIP recognizes the following languages and their corresponding param
 
 The `<LANGUAGE>` placeholder **MUST** be `"javascript"`.
 
-The available `<LANGUAGE_PARAMETERS>` are:
+The available `<CAPABILITY>` values are:
 
 > ---
 > TODO
@@ -530,7 +518,7 @@ where `event` and `validationIndex` are as above, and `validatorEvent` is the va
 
 The `<LANGUAGE>` placeholder **MUST** be `"lua"`.
 
-The available `<LANGUAGE_PARAMETERS>` are:
+he available `<CAPABILITY>` values are:
 
 > ---
 > TODO
