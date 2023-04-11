@@ -280,6 +280,11 @@ Supporting clients **MUST** validate incoming events, although they may do so ei
 
 ## 10. Examples
 
+> ---
+> TODO
+>
+> ---
+
 ## 11. Use Cases
 
 In what follows, we'll look at some use cases for NOSTR validators.
