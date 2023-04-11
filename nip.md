@@ -14,7 +14,7 @@
   - [7.1. Unknown Validators](#71-unknown-validators)
   - [7.2. Invalid Validators](#72-invalid-validators)
   - [7.3. Runtime Context](#73-runtime-context)
-    - [7.3.1. The `nostr-ro` Capability](#731-the-nostr-ro-capability)
+    - [7.3.1. The `NostrRead` Capability](#731-the-nostrread-capability)
 - [8. Relay Behavior](#8-relay-behavior)
   - [8.1. NIP-11 Extra Fields](#81-nip-11-extra-fields)
   - [8.2. NIP-20 Command Results](#82-nip-20-command-results)
@@ -153,22 +153,36 @@ If the validator tag refers to an event not of kind `1111`, or contains an inval
 During the execution of the validator code proper, agents **MAY** provide additional capabilities for the code to use.
 These can range from utility libraries (eg. JSON parsing utilities) to external communication facilities (eg. querying [IPFS](https://docs.ipfs.tech/)).
 
-#### 7.3.1. The `nostr-ro` Capability
+Although specific `v-language` conventions can declare a capability to be realized in any specific manner, extensions **SHOULD** adhere to the following guidelines:
 
-Agents **MUST** provide validators with a NOSTR querying facility identified with `nostr-ro` that will accept a [`REQ` filter specification](https://github.com/nostr-protocol/nips/blob/master/01.md#from-client-to-relay-sending-events-and-creating-subscriptions) and retrieve the results without establishing a subscription.
+1. Functionality _not_ provided by the programming language in a "standard" fashion **SHOULD** be externalized to a capability.
+2. Functionality that exhibits a _non-idempotent_ behavior **SHOULD** be externalized to a capability.
+
+Discretion is afforded to extension authors regarding what precisely should be considered _a "standard" fashion_, but as a general rule, standard libraries and _de facto_ standards are understood to fit the description.
+
+#### 7.3.1. The `NostrRead` Capability
+
+Agents **MUST** provide validators with a NOSTR querying facility identified with `NostrRead` that will accept a [`REQ` filter specification](https://github.com/nostr-protocol/nips/blob/master/01.md#from-client-to-relay-sending-events-and-creating-subscriptions) and retrieve the results without establishing a subscription.
 The pseudocode for such a capability call would look like:
 
 ```text
-nostr-ro(<FILTER_1>, <FILTER_2>, ..., <FILTER_N>)
+NostrRead(
+  <FILTER>,
+  ...
+)
 ```
 
-(where filters `<FILTER_2>` onwards are optional) and the return value would look like:
+(where additional filters are optional) and the return value would look like:
 
 ```text
-[<EVENT_1>, <EVENT_2>, ..., <EVENT_N>]
+(
+  <EVENT>,
+  ...
+)
 ```
 
 Of course, each validator language will demand their own calling conventions and specifics, as will specify the actual result values.
+Note that specific languages **MAY NOT** chose to not provide this specific capability: it is required to exist for them all in one form or another.
 
 This capability allows for validators to perform introspection on the NOSTR network.
 
