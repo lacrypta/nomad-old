@@ -132,7 +132,7 @@ With the set up taken care of, the source code will get passed the following val
 1. the whole event being validated,
 2. an index (0 based) indicating the tag number that triggered this particular validation invocation.
 
-The validator source code is now run and its return value obtained: if the return value represents a `true` value, the event is said to have _passed_ validation, if the return values represents a `false` value, the event is said to have _failed_ validation.
+The validator source code is now run and its return value obtained: if the return value represents a **TRUE** value, the event is said to have _passed_ validation, if the return values represents a **FALSE** value, the event is said to have _failed_ validation.
 
 If all validator tags have been executed and passed, the whole event is said to have passed validation, otherwise, the event as a whole is said to have failed validation.
 
@@ -237,7 +237,7 @@ Their intended meanings are as follows:
 
 - **`whitelisted`:** a list of event IDs for validator events the relay ensures knows about and is willing to execute,
 - **`blacklisted`:** a list of event IDs for validator events the relay will never execute,
-- **`timeout`:** the number of milliseconds the relay is willing to wait for a single validator execution,
+- **`timeout`:** the number of milliseconds the relay is willing to wait for a _single_ validator execution,
 - **`max_qty`:** the maximum number of validators the relay is willing to execute per event,
 - **`languages`:** a mapping stating the validator languages the relay is willing to accept; each defines a list of capabilities the relay exposes to the validators execution environment,
 - **`policy_uri`:** a URI pointing to the detailed policy text.
