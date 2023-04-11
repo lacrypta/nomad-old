@@ -111,14 +111,14 @@ A _validator tag_ is a NOSTR tag using the single-letter **`v`** conforming to t
 [
   "v",
   <VALIDATOR_EVENT_ID>,
-  <ADDITIONAL_ARGUMENTS>,
+  <ADDITIONAL_ARGUMENT>,
   ...
 ]
 ```
 
 The `<VALIDATOR_EVENT_ID>` **MUST** belong to an event of kind `1111`.
 
-The `<ADDITIONAL_ARGUMENTS>` **MAY** be omitted altogether if not needed.
+The `<ADDITIONAL_ARGUMENT>` values **MAY** be omitted altogether if not needed.
 
 More than one validator tag can be attached to an event.
 
@@ -210,16 +210,12 @@ This entails adding the current NIP number to the `supported_nips` field and pos
   ...
   "validation": {
     "whitelisted": [
-      <EVENT_ID_1>,
-      <EVENT_ID_2>,
-      ...,
-      <EVENT_ID_N>
+      <VALIDATOR_EVENT_ID>,
+      ...
     ],
     "blacklisted": [
-      <EVENT_ID_1>,
-      <EVENT_ID_2>,
-      ...,
-      <EVENT_ID_N>
+      <VALIDATOR_EVENT_ID>,
+      ...
     ],
     "timeout": <TIMEOUT_IN_MS>,
     "max_qty": <QUANTITY>,
@@ -268,7 +264,7 @@ Additionally, upon a relay encountering any [Unknown Validators](#71-unknown-val
   "OK",
   <EVENT_ID>,
   true,
-  "invalid: some unknown validators found [<UNKNOWN_VALIDATOR_1>, <UNKNOWN_VALIDATOR_2>, ..., <UNKNOWN_VALIDATOR_N>]"
+  "invalid: some unknown validators found [<UNKNOWN_VALIDATOR>, ...]"
 ]
 ```
 
@@ -464,7 +460,7 @@ Were we not to use a single-letter tag, filtering out the results client-side co
 This is so so that a validator can "find itself" in the event being validated.
 By providing the validator's index, the validator can look into the event's tags for the one being processed, extract the associated event ID as its own (if needed), and pick up the additional arguments therein.
 
-**What's the use of the validator tag `<ADDITIONAL_ARGUMENTS>` placeholder?**
+**What's the use of the validator tag `<ADDITIONAL_ARGUMENT>` placeholders?**
 
 This allows a client to construct an event that will forward different parameters to different validators, were we not to have this, we would need to find another place to put these and this would require either encroaching into the `content` field or defining a new field to hold these (or have validators "bake-in" all the required parameters, which would result in an explosion of algorithmically identical validators differing solely on actual arguments passed).
 
