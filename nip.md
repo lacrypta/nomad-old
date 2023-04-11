@@ -27,7 +27,7 @@
     - [11.3.1. NIP-13: Proof of Work](#1131-nip-13-proof-of-work)
 - [12. FAQ](#12-faq)
 - [13. Appendixes](#13-appendixes)
-  - [13.1. Recognized `validator-language` Tags](#131-recognized-validator-language-tags)
+  - [13.1. Recognized `v-language` Tags](#131-recognized-v-language-tags)
     - [13.1.1. JavaScript](#1311-javascript)
     - [13.1.2 Lua](#1312-lua)
 
@@ -84,22 +84,22 @@ Finally, appendixes follow to deal with technical aspects.
 
 A _validator event_ is defined as an event with kind `1111`.
 
-A validator event's `tags` field **MUST** include ONE AND ONLY ONE `validator-language` tag, conforming to the following format:
+A validator event's `tags` field **MUST** include ONE AND ONLY ONE `v-language` tag, conforming to the following format:
 
 ```json
 [
-  "validator-language",
+  "v-language",
   <LANGUAGE>,
   <LANGUAGE_PARAMETERS>,
   ...
 ]
 ```
 
-The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones listed in [Appendix 13](#131-recognized-validator-language-tags); although clients and relays can support languages not explicitly listed therein, and said list may be expanded upon at a later time.
+The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones listed in [Appendix 13](#131-recognized-v-language-tags); although clients and relays can support languages not explicitly listed therein, and said list may be expanded upon at a later time.
 
-The `<LANGUAGE_PARAMETERS>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary values; if given, though, they **SHOULD** correspond to those specified in [Appendix 13](#131-recognized-validator-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
+The `<LANGUAGE_PARAMETERS>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary values; if given, though, they **SHOULD** correspond to those specified in [Appendix 13](#131-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
 
-A validator event's `content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `validator-language` tag, according to any `<LANGUAGE_PARAMETERS>` provided.
+A validator event's `content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `v-language` tag, according to any `<LANGUAGE_PARAMETERS>` provided.
 
 Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) validator events should be stored and **MUST NOT** be replaced at all.
 
@@ -125,7 +125,7 @@ More than one validator tag can be attached to an event.
 ## 7. Validation
 
 Validating an event consists of retrieving all of its validator tags and executing the corresponding validators in the order they appear.
-To do this, agents should query for the event ID mentioned in the validator tag, read the `validator-language` tag to ensure support, and load the `content` field as source code to be executed.
+To do this, agents should query for the event ID mentioned in the validator tag, read the `v-language` tag to ensure support, and load the `content` field as source code to be executed.
 
 With the set up taken care of, the source code will get passed the following values in order:
 
@@ -137,7 +137,7 @@ The validator source code is now run and its return value obtained: if the retur
 
 If all validator tags have been executed and passed, the whole event is said to have passed validation, otherwise, the event as a whole is said to have failed validation.
 
-In order to pass the event and validation run number to the validator, and retrieve the validator's result, conversion procedures need to be defined for each supported language (see [Appendix 13](#131-recognized-validator-language-tags) for details regarding the ones defined in this NIP).
+In order to pass the event and validation run number to the validator, and retrieve the validator's result, conversion procedures need to be defined for each supported language (see [Appendix 13](#131-recognized-v-language-tags) for details regarding the ones defined in this NIP).
 
 ### 7.1. Unknown Validators
 
@@ -147,7 +147,7 @@ Agents are free to determine how such an event must be handled, they can either 
 
 ### 7.2. Invalid Validators
 
-If the validator tag refers to an event not of kind `1111`, or contains an invalid `validator-language` tag, that validator tag is said to be invalid and considered to have _failed_ validation.
+If the validator tag refers to an event not of kind `1111`, or contains an invalid `v-language` tag, that validator tag is said to be invalid and considered to have _failed_ validation.
 
 ### 7.3. Runtime Context
 
@@ -485,9 +485,9 @@ Validators **MUST** be ["functionally pure"](https://en.wikipedia.org/wiki/Pure_
 
 ## 13. Appendixes
 
-## 13.1. Recognized `validator-language` Tags
+## 13.1. Recognized `v-language` Tags
 
-The current NIP recognizes the following languages and their corresponding parameters for usage in the `validator-language` tag.
+The current NIP recognizes the following languages and their corresponding parameters for usage in the `v-language` tag.
 
 ### 13.1.1. JavaScript
 
