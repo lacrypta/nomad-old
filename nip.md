@@ -130,13 +130,13 @@ To do this, agents should query for the event ID mentioned in the validator tag,
 With the set up taken care of, the source code will get passed the following values in order:
 
 1. the whole event being validated,
-2. an index (0 based) indicating which validator tag is being executed.
+2. an index (0 based) indicating the tag number that triggered this particular validation invocation.
 
 The validator source code is now run and its return value obtained: if the return value represents a `true` value, the event is said to have _passed_ validation, if the return values represents a `false` value, the event is said to have _failed_ validation.
 
 If all validator tags have been executed and passed, the whole event is said to have passed validation, otherwise, the event as a whole is said to have failed validation.
 
-In order to pass the event and validation index to the validator, and retrieve the validator's result, conversion procedures need to be defined for each supported language (see [Appendix 13](#131-recognized-v-language-tags) for details regarding the ones defined in this NIP).
+In order to pass the event and tag index to the validator, and retrieve the validator's result, conversion procedures need to be defined for each supported language (see [Appendix 13](#131-recognized-v-language-tags) for details regarding the ones defined in this NIP).
 
 ### 7.1. Unknown Validators
 
@@ -295,9 +295,9 @@ By way of example, we present here a validator that will ensure the Bitcoin netw
 ```javascript
 // Requires "XMLHttpRequest" capability
 
-const event = arguments[0];                       // get the event being validated
-const validatorIndex = arguments[1];              // get the validator index
-const validatorTag = event.tags[validatorIndex];  // extract the validator tag from the event
+const event = arguments[0];                 // get the event being validated
+const tagIndex = arguments[1];              // get the tag index
+const validatorTag = event.tags[tagIndex];  // extract the validator tag from the event
 
 if (validatorTag[0] !== "v") {  // verify that we are indeed passed a validator tag
   return false;                 // fail if we're not
@@ -334,9 +334,9 @@ One such validator can be very simply implemented:
 ```javascript
 // Requires "XMLHttpRequest" capability
 
-const event = arguments[0];                       // get the event being validated
-const validatorIndex = arguments[1];              // get the validator index
-const validatorTag = event.tags[validatorIndex];  // extract the validator tag from the event
+const event = arguments[0];                 // get the event being validated
+const tagIndex = arguments[1];              // get the tag index
+const validatorTag = event.tags[tagIndex];  // extract the validator tag from the event
 
 if (validatorTag[0] !== "v") {  // verify that we are indeed passed a validator tag
   return false;                 // fail if we're not
@@ -374,9 +374,9 @@ A Proof-of-Work validator can be very simply coded thusly:
 ```javascript
 // Requires "SHA256" capability (hypothetically providing a "SHA256_AS_HEX_STRING()" function)
 
-const event = arguments[0];                       // get the event being validated
-const validatorIndex = arguments[1];              // get the validator index
-const validatorTag = event.tags[validatorIndex];  // extract the validator tag from the event
+const event = arguments[0];                 // get the event being validated
+const tagIndex = arguments[1];              // get the tag index
+const validatorTag = event.tags[tagIndex];  // extract the validator tag from the event
 
 if (validatorTag[0] !== "v") {  // verify that we are indeed passed a validator tag
   return false;                 // fail if we're not
@@ -455,10 +455,10 @@ The reason behind this is twofold:
 
 Were we not to use a single-letter tag, filtering out the results client-side could be time consuming and cumbersome.
 
-**Why does the validator get passed the validator index?**
+**Why does the validator get passed the tag index?**
 
 This is so so that a validator can "find itself" in the event being validated.
-By providing the validator's index, the validator can look into the event's tags for the one being processed, extract the associated event ID as its own (if needed), and pick up the additional arguments therein.
+By providing the tag's index, the validator can look into the event's tags for the one being processed, extract the associated event ID as its own (if needed), and pick up the additional arguments therein.
 
 **What's the use of the validator tag `<ADDITIONAL_ARGUMENT>` placeholders?**
 
@@ -495,7 +495,7 @@ Event inputs should be passed as the result of deserializing the JSON value:
 ```json
 [
   <EVENT>,
-  <VALIDATION_INDEX>
+  <TAG_INDEX>
 ]
 ```
 
@@ -505,10 +505,10 @@ Uncaught exceptions are considered `false` return values, except during relay va
 The execution environment will vary depending on the actual type of execution machine (ie. NodeJS vs browser-based), but the execution tactic should be compatible with extracting the value of the following expression:
 
 ```javascript
-(new Function(validatorEvent.content))(event, validationIndex)
+(new Function(validatorEvent.content))(event, tagIndex)
 ```
 
-where `event` and `validationIndex` are as above, and `validatorEvent` is the validator event referred to by ID in the event's `"v"` tag.
+where `event` and `tagIndex` are as above, and `validatorEvent` is the validator event referred to by ID in the event's `"v"` tag.
 
 ### 13.1.2. Lua
 
@@ -526,7 +526,7 @@ Event inputs should be passed as nested Lua tables:
 ```lua
 {
   <EVENT>,
-  <VALIDATION_INDEX>
+  <TAG_INDEX>
 }
 ```
 
