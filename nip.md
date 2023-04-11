@@ -299,7 +299,7 @@ const event = arguments[0];                 // get the event being validated
 const tagIndex = arguments[1];              // get the tag index
 const validatorTag = event.tags[tagIndex];  // extract the validator tag from the event
 
-if (validatorTag[0] !== "v") {  // verify that we are indeed passed a validator tag
+if (validatorTag[0] !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
   return false;                 // fail if we're not
 }
 
@@ -338,7 +338,7 @@ const event = arguments[0];                 // get the event being validated
 const tagIndex = arguments[1];              // get the tag index
 const validatorTag = event.tags[tagIndex];  // extract the validator tag from the event
 
-if (validatorTag[0] !== "v") {  // verify that we are indeed passed a validator tag
+if (validatorTag[0] !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
   return false;                 // fail if we're not
 }
 if (event.kind !== 1111) {      // verify that we are indeed validating a validator
@@ -378,7 +378,7 @@ const event = arguments[0];                 // get the event being validated
 const tagIndex = arguments[1];              // get the tag index
 const validatorTag = event.tags[tagIndex];  // extract the validator tag from the event
 
-if (validatorTag[0] !== "v") {  // verify that we are indeed passed a validator tag
+if (validatorTag[0] !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
   return false;                 // fail if we're not
 }
 
