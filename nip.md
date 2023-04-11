@@ -483,10 +483,7 @@ The `<LANGUAGE>` placeholder **MUST** be `"javascript"`.
 
 The available `<CAPABILITY>` values are:
 
-> ---
-> TODO
->
-> ---
+- **`XMLHttpRequest`:** makes the `XMLHttpRequest` class available to the validator's code.
 
 Event inputs should be passed as the result of deserializing the JSON value:
 
