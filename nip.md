@@ -477,7 +477,7 @@ By providing the validator's event ID and tag number, the validator can look int
 
 **What's the use of the validator tag `<ADDITIONAL_ARGUMENTS>` placeholder?**
 
-This allows a client to construct an event that will forward different parameters to different validators, were we not to have this, we would need to find another place to put these and this would require either encroaching into the `content` field or defining a new field to hold these.
+This allows a client to construct an event that will forward different parameters to different validators, were we not to have this, we would need to find another place to put these and this would require either encroaching into the `content` field or defining a new field to hold these (or have validators "bake-in" all the required parameters, which would result in an explosion of algorithmically identical validators differing solely on actual arguments passed).
 
 **Can the same validator be specified more than once?**
 
