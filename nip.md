@@ -349,7 +349,7 @@ const canonicalUrl = validatorTag[2];  // the canonical content URL is the next 
 
 const request = new XMLHttpRequest();           // build a new XMLHttpRequest
 request.open("GET", canonicalUrl, false);       // set up a synchronous GET request to the above URL
-request.send(null);                             // execute it
+request.send();                                 // execute it
 return request.responseText === event.content;  // compare it against the event's content
 ```
 
@@ -416,19 +416,18 @@ const leading0s = {
 var num0s = 0;  // the number of leading 0s
 
 // break the ID into 32-bit blocks and fast-forward the count as long as they are 0
-fastForward: for (let i = 0, j = 0; j < 4; j++) {
-  if (0 !== parseInt(event.id.substring(i, i + 8), 16)) {
+for (let i = 0; i < 32; i += 8) {
+  if (parseInt(event.id.substring(i, i + 8), 16)) {
     // deal with the non-0 block and terminate
-    for (; i < event.id.length; i++) {
+    for (; i < 32; i++) {
       const currentDigit = event.id[i];
       num0s += leading0s[currentDigit];
       if (currentDigit !== "0") {
-        break fastForward;
+        i = 32;  // break from both loops naturally
       }
     }
   } else {
     num0s += 32;
-    i+= 8;
   }
 }
 
