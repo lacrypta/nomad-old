@@ -22,10 +22,9 @@
 - [10. Examples](#10-examples)
 - [11. Use Cases](#11-use-cases)
   - [11.1. Oracles](#111-oracles)
-  - [11.2. Blockchain](#112-blockchain)
-  - [11.3. Validator Code Pinning](#113-validator-code-pinning)
-  - [11.4. Userland NIP Implementations](#114-userland-nip-implementations)
-    - [11.4.1. NIP-13: Proof of Work](#1141-nip-13-proof-of-work)
+  - [11.2. Validator Code Pinning](#112-validator-code-pinning)
+  - [11.3. Userland NIP Implementations](#113-userland-nip-implementations)
+    - [11.3.1. NIP-13: Proof of Work](#1131-nip-13-proof-of-work)
 - [12. FAQ](#12-faq)
 - [13. Appendixes](#13-appendixes)
   - [13.1. Recognized `validator-language` Tags](#131-recognized-validator-language-tags)
@@ -325,16 +324,7 @@ One would use such a validator with the given validator tag:
 
 > Notice that the `XMLHttpRequest` object needs to be available in the execution environment where this is run.
 
-### 11.2. Blockchain
-
-Although engineering a complete blockchain full with edge case defenses and future-proof security is perhaps beyond the scope of this NIP, a simple blockchain can indeed be implemented rather simply with validators.
-
-> ---
-> TODO
->
-> ---
-
-### 11.3. Validator Code Pinning
+### 11.2. Validator Code Pinning
 
 Validator Code Pinning refers to the act of storing the same validator code in more than one place, and having a validator check that those two places do indeed contain the same code.
 
@@ -379,11 +369,11 @@ In order to use this validator you can attach the following validator tag:
 
 > Notice that the `XMLHttpRequest` object needs to be available in the execution environment where this is run.
 
-### 11.4. Userland NIP Implementations
+### 11.3. Userland NIP Implementations
 
 Some NIPs can be implemented via validators, this shows that implementing this NIP could transfer protocol maintainability and specialization to the user base, without losing the unicity of specification since validator events are immutable.
 
-#### 11.4.1. NIP-13: Proof of Work
+#### 11.3.1. NIP-13: Proof of Work
 
 A Proof-of-Work validator can be very simply coded thusly:
 
