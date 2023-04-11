@@ -14,7 +14,7 @@
   - [7.1. Unknown Validators](#71-unknown-validators)
   - [7.2. Invalid Validators](#72-invalid-validators)
   - [7.3. Runtime Context](#73-runtime-context)
-    - [7.3.1. The `nostr_ro` Capability](#731-the-nostr_ro-capability)
+    - [7.3.1. The `nostr-ro` Capability](#731-the-nostr-ro-capability)
 - [8. Relay Behavior](#8-relay-behavior)
   - [8.1. NIP-11 Extra Fields](#81-nip-11-extra-fields)
   - [8.2. NIP-20 Command Results](#82-nip-20-command-results)
@@ -154,13 +154,13 @@ If the validator tag refers to an event not of kind `1111`, or contains an inval
 During the execution of the validator code proper, agents **MAY** provide additional capabilities for the code to use.
 These can range from utility libraries (eg. JSON parsing utilities) to external communication facilities (eg. querying [IPFS](https://docs.ipfs.tech/)).
 
-#### 7.3.1. The `nostr_ro` Capability
+#### 7.3.1. The `nostr-ro` Capability
 
-Agents **MUST** provide validators with a NOSTR querying facility identified with `nostr_ro` that will accept a [`REQ` filter specification](https://github.com/nostr-protocol/nips/blob/master/01.md#from-client-to-relay-sending-events-and-creating-subscriptions) and retrieve the results without establishing a subscription.
+Agents **MUST** provide validators with a NOSTR querying facility identified with `nostr-ro` that will accept a [`REQ` filter specification](https://github.com/nostr-protocol/nips/blob/master/01.md#from-client-to-relay-sending-events-and-creating-subscriptions) and retrieve the results without establishing a subscription.
 The pseudocode for such a capability call would look like:
 
 ```text
-nostr_ro(<FILTER_1>, <FILTER_2>, ..., <FILTER_N>)
+nostr-ro(<FILTER_1>, <FILTER_2>, ..., <FILTER_N>)
 ```
 
 (where filters `<FILTER_2>` onwards are optional) and the return value would look like:
@@ -461,7 +461,7 @@ This validator can be used by simply mentioning the validator ID since all the d
 The reason behind this is twofold:
 
 - on the one hand, this allows for clients to build a `REQ` query restricting themselves to events validated by specific validators, improving efficiency on the client side,
-- on the other hand, it allows validators to be freely composed via the `nostr_ro` capability: a validator can look for events referring the one being validated that are themselves validated by a specific validators.
+- on the other hand, it allows validators to be freely composed via the `nostr-ro` capability: a validator can look for events referring the one being validated that are themselves validated by a specific validators.
 
 Were we not to use a single-letter tag, filtering out the results client-side could be time consuming and cumbersome.
 
