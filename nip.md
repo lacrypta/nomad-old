@@ -43,7 +43,7 @@ The underlying motivation is to bring a form of smart contracts to NOSTR, but th
 
 Firstly, we require the actual code of these smart contracts to be held somewhere.
 Thus, we reserve a new kind to that effect and stipulate that the `content` field must then contain the source code itself.
-Since we don't want to restrict ourselves to a specific programming language, a new ("long-form") tag is defined that will declare the language used, and since several languages can be further tailored by tweaking their parameters, such tag is allowed to communicate those parameters as wel.
+Since we don't want to restrict ourselves to a specific programming language, a new ("long-form") tag is defined that will declare the language used, and since languages can be further tailored by tweaking their parameters and execution environments, such tag is allowed to communicate those capabilities as well.
 
 Now that we have a place to store our code, we need to find a way to actually use it.
 The way in which we do this is by defining a new ("short-form") tag that will contain an event ID indicating the event where the code to execute resides (we will require the event ID mentioned in such tags to be of the newly reserved kind mentioned above).
