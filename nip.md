@@ -306,10 +306,10 @@ if (validatorTag[0] !== "v") {  // (OPTIONAL) verify that we are indeed passed a
 const expectedHeight = validatorTag[2];                                // the expected block height is the next parameter
 const url = `https://blockchain.info/block-height/${expectedHeight}`;  // the block-height query URL
 
-const request = new XMLHttpRequest();               // build a new XMLHttpRequest
-request.open("GET", url, false);                    // set up a synchronous GET request to the above URL
-request.send(null);                                 // execute it
-return request.responseText !== "{\"blocks\":[]}";  // compare it against the expected error response
+const request = new XMLHttpRequest();             // build a new XMLHttpRequest
+request.open("GET", url, false);                  // set up a synchronous GET request to the above URL
+request.send();                                   // execute it
+return request.responseText !== '{"blocks":[]}';  // compare it against the expected error response
 ```
 
 One would use such a validator with the given validator tag:
@@ -406,11 +406,11 @@ const difficulty = event.tags                         // although NIP-13 is uncl
 
 // this mapping simply stores how many leading 0s a particular hex digit represents
 const leading0s = {
-  '0': 4,
-  '1': 3,
-  '2': 2, '3': 2,
-  '4': 1, '5': 1, '6': 1, '7': 1,
-  '8': 0, '9': 0, 'a': 0, 'b': 0, 'c': 0, 'd': 0, 'e': 0, 'f': 0
+  "0": 4,
+  "1": 3,
+  "2": 2, "3": 2,
+  "4": 1, "5": 1, "6": 1, "7": 1,
+  "8": 0, "9": 0, "a": 0, "b": 0, "c": 0, "d": 0, "e": 0, "f": 0,
 };
 
 var num0s = 0;  // the number of leading 0s
@@ -422,7 +422,7 @@ fastForward: for (let i = 0, j = 0; j < 4; j++) {
     for (; i < event.id.length; i++) {
       const currentDigit = event.id[i];
       num0s += leading0s[currentDigit];
-      if (currentDigit !== '0') {
+      if (currentDigit !== "0") {
         break fastForward;
       }
     }
