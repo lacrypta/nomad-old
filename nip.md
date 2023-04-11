@@ -130,14 +130,13 @@ To do this, agents should query for the event ID mentioned in the validator tag,
 With the set up taken care of, the source code will get passed the following values in order:
 
 1. the whole event being validated,
-2. the validator event ID being evaluated, and
-3. a number indicating which validator tag is being executed.
+2. an index (0 based) indicating which validator tag is being executed.
 
 The validator source code is now run and its return value obtained: if the return value represents a `true` value, the event is said to have _passed_ validation, if the return values represents a `false` value, the event is said to have _failed_ validation.
 
 If all validator tags have been executed and passed, the whole event is said to have passed validation, otherwise, the event as a whole is said to have failed validation.
 
-In order to pass the event and validation run number to the validator, and retrieve the validator's result, conversion procedures need to be defined for each supported language (see [Appendix 13](#131-recognized-v-language-tags) for details regarding the ones defined in this NIP).
+In order to pass the event and validation index to the validator, and retrieve the validator's result, conversion procedures need to be defined for each supported language (see [Appendix 13](#131-recognized-v-language-tags) for details regarding the ones defined in this NIP).
 
 ### 7.1. Unknown Validators
 
@@ -296,16 +295,12 @@ NOSTR can be greatly extended by providing oracles tying an event's validity to 
 By way of example, we present here a validator that will ensure the Bitcoin network has reached the given block height:
 
 ```javascript
-const event = arguments[0];                  // get the event being validated
-const validatorId = arguments[1];            // get the validator event ID
-const runNumber = arguments[2];              // get the run number
-const validatorTag = event.tags[runNumber];  // extract the validator tag from the event
+const event = arguments[0];                       // get the event being validated
+const validatorIndex = arguments[1];              // get the validator index
+const validatorTag = event.tags[validatorIndex];  // extract the validator tag from the event
 
-if (validatorTag[0] !== "v") {          // verify that we are indeed passed a validator tag
-  return false;                         // fail if we're not
-}
-if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
-  return false;                         // fail if we're not
+if (validatorTag[0] !== "v") {  // verify that we are indeed passed a validator tag
+  return false;                 // fail if we're not
 }
 
 const expectedHeight = validatorTag[2];                                // the expected block height is the next parameter
@@ -339,19 +334,15 @@ A validator performing code pinning would take the "customary" location as an ad
 One such validator can be very simply implemented:
 
 ```javascript
-const event = arguments[0];                  // get the event being validated
-const validatorId = arguments[1];            // get the validator event ID
-const runNumber = arguments[2];              // get the run number
-const validatorTag = event.tags[runNumber];  // extract the validator tag from the event
+const event = arguments[0];                       // get the event being validated
+const validatorIndex = arguments[1];              // get the validator index
+const validatorTag = event.tags[validatorIndex];  // extract the validator tag from the event
 
-if (validatorTag[0] !== "v") {          // verify that we are indeed passed a validator tag
-  return false;                         // fail if we're not
+if (validatorTag[0] !== "v") {  // verify that we are indeed passed a validator tag
+  return false;                 // fail if we're not
 }
-if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
-  return false;                         // fail if we're not
-}
-if (event.kind !== 1111) {              // verify that we are indeed validating a validator
-  return false;                         // fail if we're not
+if (event.kind !== 1111) {      // verify that we are indeed validating a validator
+  return false;                 // fail if we're not
 }
 
 const canonicalUrl = validatorTag[2];  // the canonical content URL is the next parameter
@@ -383,16 +374,12 @@ Some NIPs can be implemented via validators, this shows that implementing this N
 A Proof-of-Work validator can be very simply coded thusly:
 
 ```javascript
-const event = arguments[0];                  // get the event being validated
-const validatorId = arguments[1];            // get the validator event ID
-const runNumber = arguments[2];              // get the run number
-const validatorTag = event.tags[runNumber];  // extract the validator tag from the event
+const event = arguments[0];                       // get the event being validated
+const validatorIndex = arguments[1];              // get the validator index
+const validatorTag = event.tags[validatorIndex];  // extract the validator tag from the event
 
-if (validatorTag[0] !== "v") {          // verify that we are indeed passed a validator tag
-  return false;                         // fail if we're not
-}
-if (validatorTag[1] !== validatorId) {  // verify that we are indeed the right validator
-  return false;                         // fail if we're not
+if (validatorTag[0] !== "v") {  // verify that we are indeed passed a validator tag
+  return false;                 // fail if we're not
 }
 
 // calculate the event ID according to NIP-1
@@ -470,10 +457,10 @@ The reason behind this is twofold:
 
 Were we not to use a single-letter tag, filtering out the results client-side could be time consuming and cumbersome.
 
-**Why does the validator get passed the validator event ID and tag number?**
+**Why does the validator get passed the validator index?**
 
 This is so so that a validator can "find itself" in the event being validated.
-By providing the validator's event ID and tag number, the validator can look into the event's tags for the one being processed, verify that the associated event ID is its own, and pick up the additional arguments therein.
+By providing the validator's index, the validator can look into the event's tags for the one being processed, extract the associated event ID as its own (if needed), and pick up the additional arguments therein.
 
 **What's the use of the validator tag `<ADDITIONAL_ARGUMENTS>` placeholder?**
 
@@ -510,8 +497,7 @@ Event inputs should be passed as the result of deserializing the JSON value:
 ```json
 [
   <EVENT>,
-  <VALIDATOR_ID>,
-  <VALIDATION_NUMBER>
+  <VALIDATION_INDEX>
 ]
 ```
 
@@ -521,10 +507,10 @@ Uncaught exceptions are considered `false` return values, except during relay va
 The execution environment will vary depending on the actual type of execution machine (ie. NodeJS vs browser-based), but the execution tactic should be compatible with extracting the value of the following expression:
 
 ```javascript
-(new Function(event.content))(event, validatorId, validationNumber)
+(new Function(validatorEvent.content))(event, validationIndex)
 ```
 
-where `event`, `validatorId`, and `validationNumber` are as above.
+where `event` and `validationIndex` are as above, and `validatorEvent` is the validator event referred to by ID in the event's `"v"` tag.
 
 ### 13.1.2. Lua
 
@@ -542,8 +528,7 @@ Event inputs should be passed as nested Lua tables:
 ```lua
 {
   <EVENT>,
-  <VALIDATOR_ID>,
-  <VALIDATION_NUMBER>
+  <VALIDATION_INDEX>
 }
 ```
 
