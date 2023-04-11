@@ -226,9 +226,8 @@ This entails adding the current NIP number to the `supported_nips` field and pos
       ],
       ...
     },
-    "policy_id": <POLICY_ID>,
     "policy_URI": <POLICY_URI>
-  }
+  },
   ...
 }
 ```
