@@ -320,8 +320,8 @@ async function sha256toHex(data) {
         )
       )
     )
-    .map((bytes) => bytes.toString(16).padStart(2, '0'))
-    .join('')
+    .map((bytes) => bytes.toString(16).padStart(2, "0"))
+    .join("")
   ;
 }
 
