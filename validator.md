@@ -428,22 +428,13 @@ The current NIP recognizes the following languages and their corresponding param
 
 The `<LANGUAGE>` placeholder **MUST** be `"javascript"`.
 
-Event inputs should be passed as the result of deserializing the JSON value:
-
-```json
-[
-  <EVENT>,
-  <TAG_INDEX>
-]
-```
-
-and return values interpreted as JavaScript booleans.
+Return values are interpreted as JavaScript booleans.
 Uncaught exceptions are considered `false` return values.
 
 The execution environment will vary depending on the actual type of execution machine (ie. NodeJS vs browser-based), but the execution tactic should be compatible with extracting the value of the following expression:
 
 ```javascript
-(new Function(validatorEvent.content)).apply({}, [event, tagIndex])
+(new Function(validatorEvent.content)).apply({}, JSON.stringify([event, tagIndex]))
 ```
 
 where `event` and `tagIndex` are as above, and `validatorEvent` is the validator definition event referred to by ID in the event's `"v"` tag.
@@ -463,7 +454,7 @@ The available `<CAPABILITY>` values are:
 
 This list is not exhaustive, and clients **MAY** provide additional JavaScript capabilities if so desired.
 
-Additionally, the following table details what symbols are made available by each capability (or made available by default):
+The following table details what symbols are made available by each capability (or made available by default):
 
 | Symbol Name                                                 | Capability       | Dependencies |
 | ----------------------------------------------------------- | ---------------- | ------------ |
