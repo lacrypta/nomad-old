@@ -47,7 +47,7 @@ The purpose of this NIP is to provide a framework for broadcasting immutable cod
 
 ## 2. Short Description
 
-The underlying motivation is to bring a form of smart contracts to NOSTR, but the realities of a smart contract blockchain (eg. Ethereum) and NOSTR are quite different.
+The underlying motivation is to bring a form of smart contracts to NOSTR, but the realities of a smart contract blockchain (eg. Rootstock, Ethereum, etc.) and NOSTR are quite different.
 
 Firstly, we require the actual code of these smart contracts to be held somewhere.
 Thus, we reserve a new kind to that effect and stipulate that the `content` field must then contain the source code itself.
