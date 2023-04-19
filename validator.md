@@ -16,7 +16,7 @@
 - [2. Short Description](#2-short-description)
 - [3. Overview](#3-overview)
 - [4. Glossary](#4-glossary)
-- [5. Validator Event](#5-validator-event)
+- [5. Validator Definition Event](#5-validator-definition-event)
 - [6. Validator Tag](#6-validator-tag)
 - [7. Validation](#7-validation)
   - [7.1. Unknown Validators](#71-unknown-validators)
@@ -50,7 +50,7 @@ The purpose of this NIP is to provide a framework for broadcasting immutable cod
 The underlying motivation is to bring a form of smart contracts to NOSTR, but the realities of a smart contract blockchain (eg. Rootstock, Ethereum, etc.) and NOSTR are quite different.
 
 Firstly, we require the actual code of these smart contracts to be held somewhere.
-Thus, we reserve a new kind to that effect and stipulate that the `content` field must then contain the source code itself.
+Thus, we reserve a new kind to that effect and stipulate that the event's `.content` field must then contain the source code itself.
 Since we don't want to restrict ourselves to a specific programming language, a new ("long-form") tag is defined that will declare the language used, and since languages can be further tailored by tweaking their parameters and execution environments, such tag is allowed to communicate those capabilities as well.
 
 Now that we have a place to store our code, we need to find a way to actually use it.
@@ -70,9 +70,9 @@ This decentralized and asynchronous execution model does have some caveats thoug
 
 ## 3. Overview
 
-This document is organized as follows: first we introduce some terms we shall use further down in a Glossary, next we describe the Validator Event this NIP introduces, along with its language tag, next the Validator Tag used in events to be validated is presented, next the Validation procedure is explained, and finally Relay Behavior and Client Behavior are discussed.
-We close with Examples, proposed Use Cases and a FAQ section.
-Finally, appendixes follow to deal with technical aspects.
+This document is organized as follows: first we introduce some terms we shall use further down in a [Glossary](#4-glossary), next we describe the [Validator Definition Event](#5-validator-definition-event) this NIP introduces, along with its language tag, next the [Validator Tag](#6-validator-tag) used in events to be validated is presented, next the [Validation](#7-validation) procedure is explained, and finally [Client Behavior](#8-client-behavior) is discussed.
+We close with proposed [Use Cases](#9-use-cases) and a [FAQ](#10-faq) section.
+Finally, [Appendixes](#appendixes) follow to deal with technical aspects.
 
 ## 4. Glossary
 
@@ -80,19 +80,19 @@ Finally, appendixes follow to deal with technical aspects.
 
 **Validator:** a piece of code accepting a NOSTR event as input and returning either `true` or `false` (observing the convention of the source code's language).
 
+**Validator Definition Event:** a NOSTR event containing a Validator and its corresponding Language Tag.
 **Language Tag:** a NOSTR tag attached to a Validator Event used to indicate the programming language used.
 
-**Validator Event:** a NOSTR event containing a Validator and its corresponding Language Tag.
 
 **Validator Tag:** a NOSTR tag attached to an event indicating the Validator Event to use.
 
 **Validating:** the act of running a Validator against an event.
 
-## 5. Validator Event
+## 5. Validator Definition Event
 
-A _validator event_ is defined as an event with kind `1111`.
+A _validator definition event_ is defined as an event with `kind:1111`.
 
-A validator event's `tags` field **MUST** include ONE AND ONLY ONE `v-language` tag, conforming to the following format:
+A validator definition event's `.tags` field **MUST** include ONE AND ONLY ONE `"v-language"` tag, conforming to the following format:
 
 ```json
 [
@@ -107,13 +107,13 @@ The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one o
 
 The `<CAPABILITY>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary strings; if given, though, they **SHOULD** correspond to those specified in [Appendix 13](#131-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
 
-A validator event's `content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `v-language` tag, possibly making use of any `<CAPABILITY>` provided.
+A validator definition event's `.content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `"v-language"` tag, possibly making use of any `<CAPABILITY>` provided.
 
 Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) validator events should be stored and **MUST NOT** be replaced at all.
 
 ## 6. Validator Tag
 
-A _validator tag_ is a NOSTR tag using the single-letter **`v`** conforming to the following format:
+A _validator tag_ is a NOSTR tag using the single-letter **`"v"`** conforming to the following format:
 
 ```json
 [
@@ -124,7 +124,7 @@ A _validator tag_ is a NOSTR tag using the single-letter **`v`** conforming to t
 ]
 ```
 
-The `<VALIDATOR_EVENT_ID>` **MUST** belong to an event of kind `1111`.
+The `<VALIDATOR_EVENT_ID>` **MUST** belong to an event of `kind:1111`.
 
 The `<ADDITIONAL_ARGUMENT>` values **MAY** be omitted altogether if not needed.
 
@@ -133,7 +133,7 @@ More than one validator tag can be attached to an event.
 ## 7. Validation
 
 Validating an event consists of retrieving all of its validator tags and executing the corresponding validators in the order they appear.
-To do this, agents should query for the event ID mentioned in the validator tag, read the `v-language` tag to ensure support, and load the `content` field as source code to be executed.
+To do this, clients should query for the event ID mentioned in the validator tag, read the `"v-language"` tag to ensure support (both for the language and the capabilities mentioned therein), and load the `.content` field as source code to be executed.
 
 With the set up taken care of, the source code will get passed the following values in order:
 
@@ -154,14 +154,14 @@ Agents are free to determine how such an event must be handled, they can either 
 
 ### 7.2. Invalid Validators
 
-If the validator tag refers to an event not of kind `1111`, or contains an invalid `v-language` tag, that validator tag is said to be invalid and considered to have _failed_ validation.
+If the validator tag refers to an event not of `kind:1111`, or contains an invalid `"v-language"` tag, that validator tag is said to be invalid and considered to have _failed_ validation.
 
 ### 7.3. Runtime Context
 
 During the execution of the validator code proper, agents **MAY** provide additional capabilities for the code to use.
 These can range from utility libraries (eg. JSON parsing utilities) to external communication facilities (eg. querying [IPFS](https://docs.ipfs.tech/)).
 
-Although specific `v-language` conventions can declare a capability to be realized in any specific manner, extensions **SHOULD** adhere to the following guidelines:
+Although specific `"v-language"` conventions can declare a capability to be realized in any specific manner, extensions **SHOULD** adhere to the following guidelines:
 
 1. Functionality _not_ provided by the programming language in a "standard" fashion **SHOULD** be externalized to a capability.
 2. Functionality that exhibits a _non-idempotent_ behavior **SHOULD** be externalized to a capability.
