@@ -501,7 +501,7 @@ The available `<CAPABILITY>` values are:
 
 This list is not exhaustive, and clients **MAY** provide additional JavaScript capabilities if so desired.
 
-The following table details what symbols are made available by each capability (or made available by default):
+The following table details what symbols are made available by each capability, or made available by default (note the absence of `globalThis` and `eval()`, these would enable the validator code to potentially break free from containment and are thus simply not provided at all):
 
 | Symbol Name                                                 | Capability       | Dependencies |
 | ----------------------------------------------------------- | ---------------- | ------------ |
