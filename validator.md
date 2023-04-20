@@ -34,6 +34,8 @@
 - [Appendixes](#appendixes)
   - [I. Implementation Considerations](#i-implementation-considerations)
   - [II. Future Work](#ii-future-work)
+    - [II.1. VIPs](#ii1-vips)
+    - [II.2. Validator Metadata](#ii2-validator-metadata)
   - [III. Recognized `v-language` Tags](#iii-recognized-v-language-tags)
     - [III.1. JavaScript](#iii1-javascript)
 
@@ -411,16 +413,46 @@ Validators **SHOULD** be independent in the sense that they should cause no stat
 
 ## Appendixes
 
+The appendixes that follow deal with technical and governance aspects of the proposal.
+
 ### I. Implementation Considerations
 
-- timeout
-- isolation
-- test vectors
-- equivalence assertions
+Clients choosing to implement validation would do well to take defensive measures when running unknown validators.
+
+Although the purpose of this NIP is not to provide exact implementation guidelines, these specific defensive strategies are too obvious not to mention:
+
+- **Isolation:** clients should run validator code in as an isolated environment as possible; this is to prevent validator code from leaking into the client proper and interfering with its operation.
+- **Timeout:** clients should set a form of timeout for the running of each validator; this would reduce the exposed area and help mitigate any runaway validator code.
+- **Warding:** validators that connect to the outside world via communication capabilities should be "warded" and the specific communication counterparts (ie. contacted hosts for instance) curated and whitelisted; this will keep control of untrusted access in the hands of the client, preventing potential exfiltration of sensitive data.
+
+It should be noted that when clients implement [embedded validation](#81-embedded-validators), most of these strategies are no longer required, since it is understood that client developers have curated the validators to embed so as to make any concurrent defense redundant (save, perhaps, for the warding of outside world communication).
 
 ### II. Future Work
 
-- VIPs
+No single NIP can cover every possible caveat that may come up in a setting such as this.
+Several future work avenues remain.
+
+In what follows, we investigate just some of them.
+
+#### II.1. VIPs
+
+As NOSTR has NIPs as its underlying governance mechanism, validators require their own as well.
+This is not to eclipse the NIPs mechanism, but rather to increase interoperability between clients, especially in light of [embedded validation](#81-embedded-validators).
+
+As validators settle and get embedded in clients, bugs, enhancements, or mere changes to well-established ones will will need to be taken care of.
+Although there's no need to define a governance mechanism in its entirety here, we do want to provide some guidelines any such mechanism should follow:
+
+- **Proposal distribution:** VIP documents should be distributed in a resilient and decentralized manner, ideally utilizing the NOSTR network itself (perhaps via a [NIP-23](https://github.com/nostr-protocol/nips/blob/master/23.md) event).
+- **Proposal discussion and validation:** discussion of the proposal should be conducted in an open and transparent manner, ideally within the NOSTR network itself (perhaps via comments to the original VIP document).
+- **Proposal voting and acceptance:** clients and end users should then vote on the VIP proposal, voting should be transparent and open, ideally tracked in the NOSTR network itself as well.
+
+#### II.2. Validator Metadata
+
+Mechanisms for associating semantically-specific metadata to validators need to eventually be provided.
+Although very many such metadata can be conceived of, the following two are immediately useful:
+
+- **Test Vectors:** test vectors are events containing examples of both positive and negative validation instances for a specific validator; these act as guides any conforming implementation of said validator must follow; they help in providing a complete test suite for [embedded validators](#81-embedded-validators).
+- **Equivalence Assertions:** two validators may effectively consist of differing implementations of the same underlying validation algorithm, when this happens, equivalence assertions effectively state that two validators are indeed the same for all practical purposes; this is especially useful, again, in implementing [embedded validation](#81-embedded-validators), as it allows conforming clients to run the embedded versions of equivalent validators even when the mentioned IDs are not exactly the ones originally programmed in.
 
 ### III. Recognized `"v-language"` Tags
 
