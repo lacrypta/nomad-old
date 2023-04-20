@@ -114,13 +114,13 @@ A _validator tag_ is a NOSTR tag using the single-letter **`"v"`** conforming to
 ```json
 [
   "v",
-  <VALIDATOR_EVENT_ID>,
+  <VALIDATOR_DEFINITION_EVENT_ID>,
   <ADDITIONAL_ARGUMENT>,
   ...
 ]
 ```
 
-The `<VALIDATOR_EVENT_ID>` **MUST** belong to an event of `kind:1111`.
+The `<VALIDATOR_DEFINITION_EVENT_ID>` **MUST** belong to an event of `kind:1111`.
 
 The `<ADDITIONAL_ARGUMENT>` values **MAY** be omitted altogether if not needed.
 
