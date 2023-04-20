@@ -302,7 +302,7 @@ Some NIPs can be implemented via validators, this shows that implementing this N
 
 #### 9.3.1. NIP-13: Proof of Work
 
-A Proof-of-Work validator can be very simply coded thusly:
+A [NIP-13](https://github.com/nostr-protocol/nips/blob/master/13.md) Proof-of-Work validator can be very simply coded thusly:
 
 ```javascript
 // Requires the "Crypto" and "Async" capabilities
@@ -407,7 +407,7 @@ Indeed, but doing so without varying the additional arguments given in each case
 **Can the validators be run in parallel?**
 
 Absolutely.
-Validators **SHOULD** be ["functionally pure"](https://en.wikipedia.org/wiki/Pure_function) in the sense that they should cause no state change whatsoever other than those implied by an event being valid or not.
+Validators **SHOULD** be independent in the sense that they should cause no state change whatsoever other than those implied by an event being valid or not.
 
 ## Appendixes
 
