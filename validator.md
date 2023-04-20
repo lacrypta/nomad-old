@@ -99,7 +99,7 @@ A validator definition event's `.tags` field **MUST** include ONE AND ONLY ONE `
 ]
 ```
 
-The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones listed in [Appendix III](#iii-recognized-v-language-tags); although clients can support languages not explicitly listed therein, and said list may be expanded upon at a later time.
+The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones listed in [Appendix III](#iii-recognized-v-language-tags), although clients can support languages not explicitly listed therein, and said list may be expanded upon at a later time.
 
 The `<CAPABILITY>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary strings; if given, though, they **SHOULD** correspond to those specified in [Appendix III](#iii-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
 
@@ -124,7 +124,7 @@ The `<VALIDATOR_EVENT_ID>` **MUST** belong to an event of `kind:1111`.
 
 The `<ADDITIONAL_ARGUMENT>` values **MAY** be omitted altogether if not needed.
 
-More than one validator tag can be attached to an event.
+Any number of validator tags can be attached to an event.
 
 ## 7. Validation
 
@@ -185,7 +185,7 @@ NostrRead(
 )
 ```
 
-(where additional filters are optional) and the return value would look like:
+(where additional filters are optional), and the return value would look like:
 
 ```text
 (
@@ -207,11 +207,11 @@ When validating, [Invalid Validators](#72-invalid-validators) should be treated 
 
 ### 8.1. Embedded Validators
 
-Clients are not compelled to execute the validator in precisely the fashion outlined above, but can rather do so in any way functionally compatible with it.
+Clients are not compelled to execute the validator in precisely the fashion outlined above, but can rather do so in any way functionally equivalent to it.
 
 This means that whatever execution strategy that would result in exactly the same validation status can be applied by clients.
 
-As more and more [validator definition events](#5-validator-definition-event) are referenced in [validator tags](#6-validator-tag), a form of soft general consensus will organically emerge, with certain validators being found to be specially useful or ubiquitous; clients **MAY** then implement validation routines that will effectively implement the same validation procedure, and have them trigger when the corresponding validator event ID is found in a `"v"` tag.
+As more and more [validator definition events](#5-validator-definition-event) are referenced in [validator tags](#6-validator-tag), a form of soft general consensus will organically emerge, with certain validators being found to be especially useful or ubiquitous; clients **MAY** then implement validation routines that will effectively implement the same validation procedure, and have them trigger when the corresponding validator event ID is found in a `"v"` tag.
 This allows clients to avoid loading the code from the [validator definition event](#5-validator-definition-event) and undergo JSON (de)serialization, and instead run their internal corresponding validation routines for increased performance.
 
 This particular strategy of implementing validators internally by clients is termed _embedded validation_.
