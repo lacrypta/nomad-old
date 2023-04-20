@@ -164,7 +164,7 @@ If the validator tag refers to an event not of `kind:1111`, or contains an inval
 ### 7.3. Runtime Context
 
 During the execution of the validator code proper, clients **MAY** provide additional capabilities for the code to use.
-These can range from utility libraries (eg. JSON parsing utilities) to external communication facilities (eg. querying [IPFS](https://docs.ipfs.tech/)).
+These can range from utility libraries (eg. JSON parsing utilities), to external communication facilities (eg. querying [IPFS](https://docs.ipfs.tech/)), to specific language conventions being enabled or not (eg. feature flags for experimental language features).
 
 Although specific `"v-language"` conventions can declare a capability to be realized in any specific manner, extensions **SHOULD** adhere to the following guidelines:
 
@@ -175,11 +175,12 @@ Discretion is afforded to extension authors regarding what precisely should be c
 
 #### 7.3.1. The `NostrRead` Capability
 
-Clients **MUST** provide validators with a NOSTR querying facility identified with `NostrRead` that will accept a [`REQ` filter specification](https://github.com/nostr-protocol/nips/blob/master/01.md#from-client-to-relay-sending-events-and-creating-subscriptions) and retrieve the results without establishing a subscription.
+Clients **MUST** provide validators with a NOSTR querying facility identified with `NostrRead` that will accept a relay URL and a [`REQ` filter specification](https://github.com/nostr-protocol/nips/blob/master/01.md#from-client-to-relay-sending-events-and-creating-subscriptions), and query said relay to retrieve the results matching said filters without establishing a subscription.
 The pseudocode for such a capability call would look like:
 
 ```text
 NostrRead(
+  <RELAY_URL>,
   <FILTER>,
   ...
 )
@@ -196,6 +197,7 @@ NostrRead(
 
 Of course, each validator language will demand their own calling conventions and specifics, as will specify the actual result values.
 Note that specific languages **MAY NOT** chose to not provide this specific capability: it is required to exist for them all in one form or another.
+In [Appendix III](#iii-recognized-v-language-tags), each recognized language will specify how to access this capability.
 
 This capability allows for validators to perform introspection on the NOSTR network.
 
@@ -428,16 +430,29 @@ The current NIP recognizes the following languages and their corresponding param
 
 The `<LANGUAGE>` placeholder **MUST** be `"javascript"`.
 
+The validator definition event's `.content` **MUST** be ES6-compliant.
+
 Return values are interpreted as JavaScript booleans.
 Uncaught exceptions are considered `false` return values.
 
 The execution environment will vary depending on the actual type of execution machine (ie. NodeJS vs browser-based), but the execution tactic should be compatible with extracting the value of the following expression:
 
 ```javascript
-(new Function(validatorEvent.content)).apply({}, JSON.stringify([event, tagIndex]))
+try {
+  return (new Function(validatorEvent.content)).apply(
+    {},
+    JSON.stringify([event, tagIndex]),
+  );
+} catch {
+  return false;
+}
 ```
 
 where `event` and `tagIndex` are as above, and `validatorEvent` is the validator definition event referred to by ID in the event's `"v"` tag.
+
+The **`NostrRead`** capability is implemented via a global class `NOSTR`, containing methods:
+
+- **`NOSTR.read(relayUrl, filters)`:** where `relayUrl` is a string containing the relay URL to use, and `filters` is an array of objects realizing the filter specification required.s
 
 The available `<CAPABILITY>` values are:
 
