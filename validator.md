@@ -241,10 +241,10 @@ if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validat
 
 const url = `https://blockchain.info/block-height/${expectedHeight}`;  // the block-height query URL
 
-const request = new XMLHttpRequest();             // build a new XMLHttpRequest
-request.open("GET", url, false);                  // set up a synchronous GET request to the above URL
-request.send();                                   // execute it
-return request.responseText !== '{"blocks":[]}';  // compare it against the expected error response
+const request = new XMLHttpRequest();                      // build a new XMLHttpRequest
+request.open("GET", url, false);                           // set up a synchronous GET request to the above URL
+request.send();                                            // execute it
+return JSON.parse(request.responseText)["blocks"] !== [];  // compare it against the expected error response
 ```
 
 One would use such a validator with the given validator tag:
