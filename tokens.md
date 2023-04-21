@@ -122,7 +122,7 @@ for (const input of event.content.inputs) {                        // iterate th
     if (outputs.length != 1) {                                     // check there's only one,
         return false;                                              // fail otherwise
     }
-    const [ output ] = output;                                     // keep said output
+    const [ output ] = outputs;                                     // keep said output
     if (output.destination != event.pubkey) {                      // verify it's directed to us,
         return false;                                              // fail otherwise
     }
