@@ -24,7 +24,7 @@
         "inputs": [
             ...,
             {
-                "id" <ID>,   // UUIDv4 --- the ID of an unburned output
+                "id" <ID>,        // UUIDv4 --- the ID of an unburned output
                 "nonce": <NONCE>  // NONCE --- the NONCE of said output, such that SHA3(NONCE) == Output(ID).commitment
             }
             ...
@@ -34,7 +34,7 @@
             {
                 "id": <ID>,                   // UUIDv4 --- a random ID to associate to this output
                 "commitment": <COMMITMENT>,   // SHA3 of NONCE --- public commitment to the value of NONCE
-                "secret": <SECRET>,             // Encrypt(DESTINATION, NONCE) --- private revelation of the value of NONCE
+                "secret": <SECRET>,           // Encrypt(DESTINATION, NONCE) --- private revelation of the value of NONCE
                 "destination": <DESTINATION>  // PubKey --- the PubKey of the output's destination
             },
             ...
