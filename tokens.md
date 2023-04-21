@@ -102,6 +102,7 @@ async function sha256toHex(data) {
   ;
 }
 
+const RELAY = "";            // the URL of the conflict resolution relay to use
 const ALLOWED_MINTERS = [];  // list of pubkeys that are indeed allowed to mint
 
 const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, and extract event and tagIndex
@@ -114,22 +115,22 @@ if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validat
 
 var total = 0;  // keep running total of how many funds are created
 
-for (const input of event.content.inputs) {                        // iterate through each input
-    if (NOSTR.read([{"kind": 1001, "#y": input.id}]) != []) {      // verify that the input is not
-        return false;                                              // already burnt, fail otherwise
+for (const input of event.content.inputs) {                               // iterate through each input
+    if (NOSTR.read([{"kind": 1001, "#y": input.id}], RELAY) != []) {      // verify that the input is not
+        return false;                                                     // already burnt, fail otherwise
     }
-    const outputs = NOSTR.read([{"kind": 1001, "#z": input.id}]);  // retrieve all outputs associated to this input
-    if (outputs.length != 1) {                                     // check there's only one,
-        return false;                                              // fail otherwise
+    const outputs = NOSTR.read([{"kind": 1001, "#z": input.id}], RELAY);  // retrieve all outputs associated to this input
+    if (outputs.length != 1) {                                            // check there's only one,
+        return false;                                                     // fail otherwise
     }
-    const [ output ] = outputs;                                     // keep said output
-    if (output.destination != event.pubkey) {                      // verify it's directed to us,
-        return false;                                              // fail otherwise
+    const [ output ] = outputs;                                           // keep said output
+    if (output.destination != event.pubkey) {                             // verify it's directed to us,
+        return false;                                                     // fail otherwise
     }
-    if (sha256toHex(input.nonce) != output.commitment) {           // verify it matches the commitment,
-        return false;                                              // fail otherwise
+    if (sha256toHex(input.nonce) != output.commitment) {                  // verify it matches the commitment,
+        return false;                                                     // fail otherwise
     }
-    total += output.quantity;                                      // accumulate running total
+    total += output.quantity;                                             // accumulate running total
 }
 
 for (const output of event.content.outputs) {  // iterate through each output
