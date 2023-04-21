@@ -485,6 +485,10 @@ try {
 
 where `event` and `tagIndex` are as above, and `validatorEvent` is the validator definition event referred to by ID in the event's `"v"` tag.
 
+The [`DefaultLocale()`](https://402.ecma-international.org/4.0/#sec-defaultlocale) abstract operation **MUST** return the `C` locale.
+
+No support is explicitly provided for JavaScript Events, but conforming clients are free to define a capability (perhaps called `Events`) to signal usage and support for this functionality.
+
 The **`NostrRead`** capability is implemented via a global class `NOSTR`, containing methods:
 
 - **`NOSTR.read(filters)`:** where `filters` is an array of objects realizing the filter specification required.
