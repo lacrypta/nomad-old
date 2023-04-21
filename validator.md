@@ -177,18 +177,21 @@ Discretion is afforded to extension authors regarding what precisely should be c
 
 #### 7.3.1. The `NostrRead` Capability
 
-Clients **MUST** provide validators with a NOSTR querying facility identified with `NostrRead` that will accept a relay URL and a [`REQ` filter specification](https://github.com/nostr-protocol/nips/blob/master/01.md#from-client-to-relay-sending-events-and-creating-subscriptions), and query said relay to retrieve the results matching said filters without establishing a subscription.
+Clients **MUST** provide validators with a NOSTR querying facility identified with `NostrRead` that will accept a [`REQ` filter specification](https://github.com/nostr-protocol/nips/blob/master/01.md#from-client-to-relay-sending-events-and-creating-subscriptions) and an optional relay URL, and query said relay to retrieve the results matching said filters without establishing a subscription.
 The pseudocode for such a capability call would look like:
 
 ```text
-NostrRead(
-  <RELAY_URL>,
-  <FILTER>,
-  ...
-)
+NostrRead((<FILTER>, ... ))
 ```
 
-(where additional filters are optional), and the return value would look like:
+(where additional filters are optional), without an explicit relay, or
+
+```text
+NostrRead((<FILTER>, ... ), <RELAY_URL>)
+```
+
+passing an explicit relay URL.
+The return value would look like:
 
 ```text
 (
@@ -484,7 +487,8 @@ where `event` and `tagIndex` are as above, and `validatorEvent` is the validator
 
 The **`NostrRead`** capability is implemented via a global class `NOSTR`, containing methods:
 
-- **`NOSTR.read(relayUrl, filters)`:** where `relayUrl` is a string containing the relay URL to use, and `filters` is an array of objects realizing the filter specification required.s
+- **`NOSTR.read(filters)`:** where `filters` is an array of objects realizing the filter specification required.
+- **`NOSTR.read(filters, relayUrl)`:** where `filters` is an array of objects realizing the filter specification required, and `relayUrl` is a string containing the relay URL to use.
 
 The available `<CAPABILITY>` values are:
 
