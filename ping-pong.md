@@ -1,7 +1,7 @@
 <!-- markdownlint-enable -->
 <!-- markdownlint-disable MD013 -->
 
-# NIP-XX
+# NIP-XX --- Ping / Pong
 
 > The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**,  **MAY**, and **OPTIONAL** in this document are to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt).
 
