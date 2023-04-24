@@ -14,9 +14,31 @@
 
 ---
 
+- [1. Motivation](#1-motivation)
+- [2. Short Description](#2-short-description)
+- [3. Overview](#3-overview)
+- [4. The NOSTR Token Flow Event](#4-the-nostr-token-flow-event)
+  - [4.1. Validator](#41-validator)
+- [5. Client Behavior](#5-client-behavior)
+- [6. FAQ](#6-faq)
+
 ---
 
-## Token Flow Event
+## 1. Motivation
+
+## 2. Short Description
+
+## 3. Overview
+
+## 4. The NOSTR Token Flow Event
+
+### 4.1. Validator
+
+## 5. Client Behavior
+
+## 6. FAQ
+
+---
 
 ```json
 {
@@ -83,6 +105,48 @@ As a [validator](validators.md):
 // Requires the "NostrRead", "Crypto", and "Async" capabilities
 
 /**
+ * NOSTR Tokens Validator
+ *
+ * This generic NOSTR Tokens Validator can be attached to a NOSTR Token Flow Event to validate
+ * the actions taken therein.
+ * It has been coded so as to allow several different policies, by tweaking the values of:
+ *
+ * - RELAY: a sting with the URL of the preferred relay to use; it is HIGHLY RECOMMENDED to set this
+ *     value to the relay that will act as the single source of truth for al these NOSTR Tokens
+ * - PRE_MINTED: an array of outputs that are considered pre-minted and pre-assigned
+ * - ALLOWED_MINTERS: an array of pubkeys or prefixes thereof that are allowed to mint tokens
+ *
+ * Setting a value for RELAY is HIGHLY RECOMMENDED because otherwise, thanks to the distributed nature
+ * of the NOSTR network, double-spend attacks are easy to realize, having a single relay act as the
+ * arbiter of truth reduces this possibility considerably.
+ *
+ * Setting values for ALLOWED_MINTERS allows for the emission policy to be controlled tightly, only
+ * allowing some, all, or none to add liquidity.
+ * For extreme examples, consider:
+ *
+ * - ALLOWED_MINTERS = []: this allows no-one to mint tokens, all tokens in existence are those
+ *     provided in the PRE_MINTED array and none more (consequently, if the PRE_MINTED array is
+ *     empty, these tokens basically become impossible to use at all)
+ * - ALLOWED_MINTERS = ['']: this allows everyone to mint tokens, since '' is a prefix of any
+ *     pubkey, anyone can create liquidity
+ *
+ * Setting a value for PRE_MINTED makes it so that the given outputs are originally available, thus
+ * it allows for emission outside of the dynamic control of ALLOWED_MINTERS.
+ * This makes it possible to implement, eg, finite-supply tokens (setting ALLOWED_MINTERS to []).
+ *
+ * Usage merely requires adding a tag of the form:
+ *
+ *     ["v", "<VALIDATOR_MESSAGE_ID>"]
+ *
+ * to NOSTR Token Flow events.
+ *
+ */
+
+const RELAY = "";            // the URL of the conflict resolution relay to use
+const PRE_MINTED = [];       // an array of pre-minted outputs
+const ALLOWED_MINTERS = [];  // an array of pubkeys or prefixes that are indeed allowed to mint
+
+/**
  * Calculate the SHA-256 of the given string, and return it as a hex string
  *
  * @param {string} data - The data to hash
@@ -102,44 +166,86 @@ async function sha256toHex(data) {
   ;
 }
 
-const RELAY = "";            // the URL of the conflict resolution relay to use
-const ALLOWED_MINTERS = [];  // list of pubkeys that are indeed allowed to mint
+/**
+ * Retrieve the NOSTR Token Flow events using the given input ID
+ *
+ * @param {number} id - The input ID to search for
+ * @return {object[]}  The events using the given input ID
+ */
+function fetchInputs(id) {
+    return RELAY !== ""
+        ? NOSTR.read([{"kind": 1001, "#y": id}], RELAY)
+        : NOSTR.read([{"kind": 1001, "#y": id}])
+    ;
+}
 
-const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, and extract event and tagIndex
+/**
+ * Retrieve the NOSTR Token Flow events using the given output ID
+ *
+ * @param {number} id - The output ID to search for
+ * @return {object[]}  The events using the given output ID
+ */
+function fetchOutputs(id) {
+    return RELAY !== ""
+        ? NOSTR.read([{"kind": 1001, "#z": id}], RELAY)
+        : NOSTR.read([{"kind": 1001, "#z": id}])
+    ;
+}
+
+const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, extract event and tagIndex
 
 const [ tagName ] = event.tags[tagIndex];  // extract the validator tag name
 
-if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;         // fail if we're not
-}
+if (tagName !== "v") {      // (OPTIONAL) verify that we are indeed passed a validator tag
+  return false;             // fail if we're not
+}                           //
+if (event.kind !== 1001) {  // verify that we're being run on a Token Flow event
+    return false;           // fail of re're not
+}                           //
 
-var total = 0;  // keep running total of how many funds are created
+var total = 0n;  // keep running total of how many funds are created (use BigInt)
 
-for (const input of event.content.inputs) {                               // iterate through each input
-    if (NOSTR.read([{"kind": 1001, "#y": input.id}], RELAY) != []) {      // verify that the input is not
-        return false;                                                     // already burnt, fail otherwise
-    }
-    const outputs = NOSTR.read([{"kind": 1001, "#z": input.id}], RELAY);  // retrieve all outputs associated to this input
-    if (outputs.length != 1) {                                            // check there's only one,
-        return false;                                                     // fail otherwise
-    }
-    const [ output ] = outputs;                                           // keep said output
-    if (output.destination != event.pubkey) {                             // verify it's directed to us,
-        return false;                                                     // fail otherwise
-    }
-    if (sha256toHex(input.nonce) != output.commitment) {                  // verify it matches the commitment,
-        return false;                                                     // fail otherwise
-    }
-    total += output.quantity;                                             // accumulate running total
-}
+for (const input of event.content.inputs) {               // iterate through each input
+    if (fetchInputs(input.id) != []) {                    // verify that the input is not
+        return false;                                     // already burnt, fail otherwise
+    }                                                     //
+    var outputs = fetchOutputs(input.id);                 // retrieve all outputs associated to this input
+    if (1 < outputs.length) {                             // check there's at most one,
+        return false;                                     // fail otherwise
+    } else if (outputs.length < 1) {                      // if we couldn't find outputs...
+        for (const preMinted of PRE_MINTED) {             // ... check pre-minted
+            if (preMinted.id === input.id) {              // if the pre-minted output has the same ID
+                outputs.push(preMinted);                  // accumulate it
+            }                                             //
+        }                                                 //
+        if (1 !== outputs.length) {                       // check that there's exactly one pre-minted output
+            return false;                                 // fail otherwise
+        }                                                 //
+    }                                                     //
+    const [ output ] = outputs;                           // keep the output
+    if (output.destination != event.pubkey) {             // verify it's directed to us,
+        return false;                                     // fail otherwise
+    }                                                     //
+    if (sha256toHex(input.nonce) != output.commitment) {  // verify it matches the commitment,
+        return false;                                     // fail otherwise
+    }                                                     //
+    total += output.quantity;                             // accumulate running total
+}                                                         //
 
 for (const output of event.content.outputs) {  // iterate through each output
     total -= output.quantity;                  // decrease running total
+}                                              //
+
+if (total <= 0) {                                      // if we're minting tokens
+    for (const allowedMinter of ALLOWED_MINTERS) {     // iterate through each allowed minter
+        if (event.pubkey.startsWith(allowedMinter)) {  // if the event's pubkey os a prefix or equal
+            return true;                               // this is a valid event
+        }                                              //
+    }                                                  //
+    return false;                                      // if not an allowed minter, fail
 }
 
-// if the net effect is either to burn or break-even in token quantities, return true,
-// otherwise (ie. minting), check we are among the allowed minters
-return total <= 0 || ALLOWED_MINTERS.includes(event.pubkey)
+return true;  // everything looks fine, validate
 ```
 
 ### Additional checks
