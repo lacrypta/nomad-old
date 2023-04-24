@@ -263,11 +263,11 @@ var seenInputs = new Set();        // initialize seen inputs
 var seenOutputs = new Set();       // initialize seen outputs
 var seenDestinations = new Set();  // initialize seen destinations
 
-const content = JSON.parse(event.content);
+const content = JSON.parse(event.content);  // parse the event's content
 
 var total = 0n;  // keep running total of how many funds are created (use BigInt)
 
-for (const input of content.inputs) {               // iterate through each input
+for (const input of content.inputs) {                     // iterate through each input
     if (seenInputs.has(input.id)) {                       // verify the input ID is not repeated
         return false;                                     // fail if it is
     }                                                     //
@@ -298,7 +298,7 @@ for (const input of content.inputs) {               // iterate through each inpu
     total += output.quantity;                             // accumulate running total
 }                                                         //
 
-for (const output of content.outputs) {  // iterate through each output
+for (const output of content.outputs) {        // iterate through each output
     if (seenOutputs.has(output.id)) {          // verify the output ID is not repeated
         return false;                          // fail if it is
     }                                          //
