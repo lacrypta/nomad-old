@@ -18,8 +18,12 @@
 - [2. Short Description](#2-short-description)
 - [3. Overview](#3-overview)
 - [4. The NOSTR Token Flow Event](#4-the-nostr-token-flow-event)
-  - [4.1. Validator](#41-validator)
 - [5. Client Behavior](#5-client-behavior)
+  - [5.1. Additional Restrictions](#51-additional-restrictions)
+  - [5.2. Token Ownership Checks](#52-token-ownership-checks)
+  - [5.3. Validators](#53-validators)
+    - [5.3.1. Token Flow](#531-token-flow)
+    - [5.3.2. Token Ownership Check](#532-token-ownership-check)
 - [6. FAQ](#6-faq)
 
 ---
@@ -32,9 +36,17 @@
 
 ## 4. The NOSTR Token Flow Event
 
-### 4.1. Validator
-
 ## 5. Client Behavior
+
+### 5.1. Additional Restrictions
+
+### 5.2. Token Ownership Checks
+
+### 5.3. Validators
+
+#### 5.3.1. Token Flow
+
+#### 5.3.2. Token Ownership Check
 
 ## 6. FAQ
 
@@ -49,13 +61,15 @@
     ...,
     "tags": [
         ...,
-        ["y", <INPUT_ID>],
+        ["y", <INPUT_ID>],  // Used input IDs
         ...,
-        ["z", <OUTPUT_ID>],
+        ["z", <OUTPUT_ID>],  // Used output IDs
+        ...
+        ["p", <DESTINATION>],  // Mentioned destination pubkeys --- NOTE: the recommended relay URL, if given, is ignored
         ...
     ],
     ...,
-    "content": {
+    "content": /* JSON.stringify( */ {
         "inputs": [
             ...,
             {
@@ -75,7 +89,7 @@
             },
             ...
         ]
-    },
+    } /* ) */,
     ...
 }
 ```
@@ -111,28 +125,29 @@ As a [validator](validators.md):
  * the actions taken therein.
  * It has been coded so as to allow several different policies, by tweaking the values of:
  *
- * - RELAY: a sting with the URL of the preferred relay to use; it is HIGHLY RECOMMENDED to set this
- *     value to the relay that will act as the single source of truth for al these NOSTR Tokens
- * - PRE_MINTED: an array of outputs that are considered pre-minted and pre-assigned
- * - ALLOWED_MINTERS: an array of pubkeys or prefixes thereof that are allowed to mint tokens
+ * - BURN: a boolean, determining whether it is permitted to burn tokens away
+ * - RELAYS: a string Set with the URLs of the preferred relays to use; it is HIGHLY RECOMMENDED to
+ *     set this value to the relays that will act as the sources of truth for al these NOSTR Tokens
+ * - PRE_MINTED: a Set of outputs that are considered pre-minted and pre-assigned
+ * - ALLOWED_MINTERS: a Set of pubkeys or prefixes thereof that are allowed to mint tokens
  *
- * Setting a value for RELAY is HIGHLY RECOMMENDED because otherwise, thanks to the distributed nature
- * of the NOSTR network, double-spend attacks are easy to realize, having a single relay act as the
- * arbiter of truth reduces this possibility considerably.
+ * Setting a value for RELAYS is HIGHLY RECOMMENDED because otherwise, thanks to the distributed
+ * nature of the NOSTR network, double-spend attacks are easy to realize, having a set of relays act
+ * as the arbiters of truth reduces this possibility considerably.
  *
  * Setting values for ALLOWED_MINTERS allows for the emission policy to be controlled tightly, only
  * allowing some, all, or none to add liquidity.
  * For extreme examples, consider:
  *
- * - ALLOWED_MINTERS = []: this allows no-one to mint tokens, all tokens in existence are those
+ * - ALLOWED_MINTERS = new Set(): this allows no-one to mint tokens, all tokens in existence are those
  *     provided in the PRE_MINTED array and none more (consequently, if the PRE_MINTED array is
  *     empty, these tokens basically become impossible to use at all)
- * - ALLOWED_MINTERS = ['']: this allows everyone to mint tokens, since '' is a prefix of any
+ * - ALLOWED_MINTERS = new Set(['']): this allows everyone to mint tokens, since '' is a prefix of any
  *     pubkey, anyone can create liquidity
  *
  * Setting a value for PRE_MINTED makes it so that the given outputs are originally available, thus
  * it allows for emission outside of the dynamic control of ALLOWED_MINTERS.
- * This makes it possible to implement, eg, finite-supply tokens (setting ALLOWED_MINTERS to []).
+ * This makes it possible to implement, eg, finite-supply tokens (setting ALLOWED_MINTERS to Set()).
  *
  * Usage merely requires adding a tag of the form:
  *
@@ -142,9 +157,21 @@ As a [validator](validators.md):
  *
  */
 
-const RELAY = "";            // the URL of the conflict resolution relay to use
-const PRE_MINTED = [];       // an array of pre-minted outputs
-const ALLOWED_MINTERS = [];  // an array of pubkeys or prefixes that are indeed allowed to mint
+const BURN = true;                  // whether burning Tokens is allowed
+const RELAYS = new Set();           // a set of relay URLs to use
+const PRE_MINTED = new Set();       // a set of pre-minted outputs
+const ALLOWED_MINTERS = new Set();  // a set of pubkeys or prefixes that are indeed allowed to mint
+
+/**
+ * Check if two sets contain the same elements
+ *
+ * @param {Set} a - First set to compare
+ * @param {Set} b - Second set to compare
+ * @return {boolean}  True if both sets contain the same elements, false otherwise
+ */
+function equalSets(a, b) {
+    return a.size === b.size && new Set([...a, ...b]).size === a.size;
+}
 
 /**
  * Calculate the SHA-256 of the given string, and return it as a hex string
@@ -153,17 +180,35 @@ const ALLOWED_MINTERS = [];  // an array of pubkeys or prefixes that are indeed 
  * @return {string}  The resulting hex string
  */
 async function sha256toHex(data) {
-  return Array.from(
-      new Uint8Array(
-        await crypto.subtle.digest(
-          "SHA-256",
-          (new TextEncoder()).encode(data),
+    return Array.from(
+            new Uint8Array(
+                await crypto.subtle.digest(
+                    "SHA-256",
+                    (new TextEncoder()).encode(data),
+                )
+            )
         )
-      )
-    )
-    .map((bytes) => bytes.toString(16).padStart(2, "0"))
-    .join("")
-  ;
+        .map(bytes => bytes.toString(16).padStart(2, "0"))
+        .join("")
+    ;
+}
+
+/**
+ * Retrieve the NOSTR Token Flow events using the given input or output ID
+ *
+ * @param {"y"|"z"} tag - The tag to search for
+ * @param {number} id - The input ID to search for
+ * @return {object[]}  The events using the given input ID
+ */
+function fetchFromRelays(tag, id) {
+    const filter = [{"kind": 1001, `#${tag}`: id}];
+    if (RELAYS === []) {
+        return NOSTR.read(filter);
+    } else {
+        return Array.from(new Set(
+            RELAYS.map(relay => NOSTR.read(filter, relay))
+        ));
+    }
 }
 
 /**
@@ -173,10 +218,7 @@ async function sha256toHex(data) {
  * @return {object[]}  The events using the given input ID
  */
 function fetchInputs(id) {
-    return RELAY !== ""
-        ? NOSTR.read([{"kind": 1001, "#y": id}], RELAY)
-        : NOSTR.read([{"kind": 1001, "#y": id}])
-    ;
+    return fetchFromRelays("y", id);
 }
 
 /**
@@ -186,26 +228,50 @@ function fetchInputs(id) {
  * @return {object[]}  The events using the given output ID
  */
 function fetchOutputs(id) {
-    return RELAY !== ""
-        ? NOSTR.read([{"kind": 1001, "#z": id}], RELAY)
-        : NOSTR.read([{"kind": 1001, "#z": id}])
-    ;
+    return fetchFromRelays("z", id);
 }
+
 
 const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, extract event and tagIndex
 
 const [ tagName ] = event.tags[tagIndex];  // extract the validator tag name
 
 if (tagName !== "v") {      // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;             // fail if we're not
+    return false;           // fail if we're not
 }                           //
 if (event.kind !== 1001) {  // verify that we're being run on a Token Flow event
-    return false;           // fail of re're not
+    return false;           // fail if we're not
 }                           //
+
+const taggedInputs = new Set(           // retrieve the set of all input tags
+    event.tags                          //
+        .filter(tag => tag[0] === "y")  //
+        .map(tag => tag[1])             //
+);                                      //
+const taggedOutputs = new Set(          // retrieve the set of all output tags
+    event.tags                          //
+        .filter(tag => tag[0] === "z")  //
+        .map(tag => tag[1])             //
+);                                      //
+const taggedDestinations = new Set(     // retrieve the set of all destination tags
+    event.tags                          //
+        .filter(tag => tag[0] === "p")  //
+        .map(tag => tag[1])             //
+);                                      //
+
+var seenInputs = new Set();        // initialize seen inputs
+var seenOutputs = new Set();       // initialize seen outputs
+var seenDestinations = new Set();  // initialize seen destinations
+
+const content = JSON.parse(event.content);
 
 var total = 0n;  // keep running total of how many funds are created (use BigInt)
 
-for (const input of event.content.inputs) {               // iterate through each input
+for (const input of content.inputs) {               // iterate through each input
+    if (seenInputs.has(input.id)) {                       // verify the input ID is not repeated
+        return false;                                     // fail if it is
+    }                                                     //
+    seenInputs.add(input.id);                             // add the current input ID to the seen ones
     if (fetchInputs(input.id) != []) {                    // verify that the input is not
         return false;                                     // already burnt, fail otherwise
     }                                                     //
@@ -232,9 +298,24 @@ for (const input of event.content.inputs) {               // iterate through eac
     total += output.quantity;                             // accumulate running total
 }                                                         //
 
-for (const output of event.content.outputs) {  // iterate through each output
+for (const output of content.outputs) {  // iterate through each output
+    if (seenOutputs.has(output.id)) {          // verify the output ID is not repeated
+        return false;                          // fail if it is
+    }                                          //
+    seenOutputs.add(output.id);                // add the current output ID to the seen ones
+    seenDestinations.add(output.destination);  // add the destination ID to the seen ones
     total -= output.quantity;                  // decrease running total
 }                                              //
+
+if (!equalSets(taggedInputs, seenInputs)) {              // check that all seen inputs are tagged
+    return false;                                        // fail if not
+}                                                        //
+if (!equalSets(taggedOutputs, seenOutputs)) {            // check that all seen outputs are tagged
+    return false;                                        // fail if not
+}                                                        //
+if (!equalSets(taggedDestinations, seenDestinations)) {  // check that all seen destinations are tagged
+    return false;                                        // fail if not
+}                                                        //
 
 if (total <= 0) {                                      // if we're minting tokens
     for (const allowedMinter of ALLOWED_MINTERS) {     // iterate through each allowed minter
@@ -243,9 +324,11 @@ if (total <= 0) {                                      // if we're minting token
         }                                              //
     }                                                  //
     return false;                                      // if not an allowed minter, fail
-}
-
-return true;  // everything looks fine, validate
+} else if (total < 0) {                                // if we're burning tokens
+    return BURN;                                       // this is valid only if burning allowed
+} else {                                               // otherwise
+    return true;                                       // everything looks fine, validate
+}                                                      //
 ```
 
 ### Additional checks
