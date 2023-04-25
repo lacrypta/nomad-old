@@ -209,6 +209,26 @@ In [Appendix III](#iii-recognized-v-language-tags), each recognized language wil
 
 This capability allows for validators to perform introspection on the NOSTR network.
 
+#### 7.3.2. The `NostrValidate` Capability
+
+Clients **MUST** provide validators with a NOSTR validation facility identified with `NostrValidate` that will accept a NOSTR event and execute all validators defined for it, returning **TRUE** if the event passes validation, or **FALSE** otherwise.
+The pseudocode for such a capability call would look like:
+
+```text
+NostrValidate(event)
+```
+
+The return value would simply consist of the resulting boolean value.
+
+Of course, each validator language will demand their own calling conventions and specifics, as will specify the actual result values.
+Note that specific languages **MAY NOT** chose to not provide this specific capability: it is required to exist for them all in one form or another.
+In [Appendix III](#iii-recognized-v-language-tags), each recognized language will specify how to access this capability.
+
+This capability allows for validators to perform cascaded validation on queried events.
+
+> **NOTE:** the usage of this capability runs the risk of taking longer times to validate.
+> Clients are advised to _not_ run validators making use of `NostrValidate` capabilities in an eager fashion, and only do so if at all for whitelisted validator IDs.
+
 ## 8. Client Behavior
 
 Supporting clients **MAY** validate incoming events, and they may do so either _eagerly_ or _lazily_ upon the user's request.
@@ -496,6 +516,10 @@ The **`NostrRead`** capability is implemented via a global class `NOSTR`, contai
 
 - **`NOSTR.read(filters)`:** where `filters` is an array of objects realizing the filter specification required.
 - **`NOSTR.read(filters, relayUrl)`:** where `filters` is an array of objects realizing the filter specification required, and `relayUrl` is a string containing the relay URL to use.
+
+The **`NostrValidate`** capability is implemented via a global class `NOSTR`, containing method:
+
+- **`NOSTR.validate(event)`:** where `event` is an object containing a NOSTR event.
 
 The available `<CAPABILITY>` values are:
 
