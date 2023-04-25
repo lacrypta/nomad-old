@@ -90,8 +90,7 @@
             "id": <TOKEN_ID>,              // UUIDv4 --- a random ID to associate to this output
             "commitment": <COMMITMENT>,    // SHA-256 of NONCE --- public commitment to the value of NONCE
             "secret": <SECRET>,            // Encrypt(DESTINATION, NONCE) --- private revelation of the value of NONCE
-            "destination": <DESTINATION>,  // PubKey --- the PubKey of the output's destination,
-            "quantity": <QUANTITY>         // INT --- a number representing the amount sent of the Token in question
+            "destination": <DESTINATION>   // PubKey --- the PubKey of the output's destination,
         },
         ...
     ]
@@ -318,7 +317,7 @@ for (const input of content.inputs) {                            // iterate thro
     if (sha256toHex(input.nonce) != output[0].commitment) {      // verify it matches the commitment,
         return false;                                            // fail otherwise
     }                                                            //
-    total += output[0].quantity;                                 // accumulate running total
+    total++;                                                     // accumulate running total
     seenInputs.add(input.id);                                    // add the current input ID to the seen ones
 }                                                                //
 
@@ -326,7 +325,7 @@ for (const output of content.outputs) {        // iterate through each output
     if (seenOutputs.has(output.id)) {          // verify the output ID is not repeated
         return false;                          // fail if it is
     }                                          //
-    total -= output.quantity;                  // decrease running total
+    total--;                                   // decrease running total
     seenOutputs.add(output.id);                // add the current output ID to the seen ones
     seenDestinations.add(output.destination);  // add the destination ID to the seen ones
 }                                              //
@@ -377,7 +376,7 @@ if (total < 0) {                                                        // if we
  *
  * Usage merely requires adding a tag of the form:
  *
- *     ["v", "<VALIDATOR_MESSAGE_ID>", "<TARGET_AMOUNT>", "<TOKEN_ID_1>", "<TOKEN_ID_2>", ..., "<TOKEN_ID_N>", ...]
+ *     ["v", "<VALIDATOR_MESSAGE_ID>", "<TOKEN_ID_1>", "<TOKEN_ID_2>", ..., "<TOKEN_ID_N>", ...]
  *
  * to NOSTR events.
  *
@@ -457,13 +456,11 @@ function fetchOutputs(ids, until) {
 
 const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, extract event and tagIndex
 
-const [ tagName, , targetAmount, ...tokenIds ] = event.tags[tagIndex];  // extract the validator tag name and output IDs
+const [ tagName, , ...tokenIds ] = event.tags[tagIndex];  // extract the validator tag name and token IDs
 
 if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
     return false;       // fail if we're not
 }                       //
-
-var target = BigInt(targetAmount);
 
 const tokenIdsClean = Set(tokenIds);
 const outputs = fetchOutputs(Array.from(tokenIdsClean), event.created_at)
@@ -477,11 +474,7 @@ if (fetchInputs(Array.from(tokenIdsClean), event.created_at) !== []) {
     return false;
 }
 
-for (const output of outputs) {
-    target -= output.quantity;
-}
-
-return target <= 0;
+return true;
 ```
 
 ### Additional checks
