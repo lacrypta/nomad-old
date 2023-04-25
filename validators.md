@@ -8,7 +8,7 @@
 `draft` `optional`
 
 `kind:1111`
-`tag:v` `tag:v-language`
+`tag:v` `tag:v-language` `tag:v-hints`
 
 `depends:01` `depends:16`
 `mentions:13`
@@ -109,6 +109,30 @@ The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one o
 The `<CAPABILITY>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary strings; if given, though, they **SHOULD** correspond to those specified in [Appendix III](#iii-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
 
 A validator definition event's `.content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `"v-language"` tag, possibly making use of any `<CAPABILITY>` provided.
+
+A validator definition event's `.tags` field **MAY** contain ONE OR MORE `"v-hints"` tags, conforming to the following format:
+
+```json
+[
+  "v-hints",
+  <HINT>,
+  ...
+]
+```
+
+The `<HINT>` placeholder, if present, **SHOULD** be one of:
+
+- **`"CACHE"`:** the presence of this hint lets the client know that the validator's result can safely be cached (ie. the same event ID will yield the same result),
+- **`"FRESH"`:** the presence of this hint lets the client know that the validator's result can _NOT_ safely be cached (ie. the same event ID won't necessarily yield the same result),
+- **`"LAZY"`:** this hint lets the client know that this validator should be executed solely in response to the end user asking for it,
+- **`"EAGER"`:** this hint lets the client know that this validator should be executed as soon as the message is received if possible,
+
+this list is not exhaustive and clients are free to support additional hints if they so wish.
+
+Clients can take the following as guidelines regarding hints:
+
+- a validator using _no_ capabilities can safely be assumed to be hinted with `"CACHE"` if not otherwise hinted with `"FRESH"`,
+- a validator using either the `NostrRead` or `NostrValidate` capabilities can conservatively be assumed to be hinted with `"LAZY"`; clients are encouraged to ignore the `"EAGER"` hint for validators using either the `NostrRead` or `NostrValidate` capabilities, except when they have been previously vetted by the client implementation team.
 
 > Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) validator definition events should be stored and **MUST NOT** be replaced at all.
 
