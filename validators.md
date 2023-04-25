@@ -26,6 +26,7 @@
   - [7.2. Invalid Validators](#72-invalid-validators)
   - [7.3. Runtime Context](#73-runtime-context)
     - [7.3.1. The `NostrRead` Capability](#731-the-nostrread-capability)
+    - [7.3.2. The `NostrValidate` Capability](#732-the-nostrvalidate-capability)
 - [8. Client Behavior](#8-client-behavior)
   - [8.1. Embedded Validators](#81-embedded-validators)
 - [9. Use Cases](#9-use-cases)
@@ -33,6 +34,7 @@
   - [9.2. Validator Code Pinning](#92-validator-code-pinning)
   - [9.3. Userland NIP Implementations](#93-userland-nip-implementations)
     - [9.3.1. NIP-13: Proof of Work](#931-nip-13-proof-of-work)
+  - [9.4. SNTs: Simple NOSTR Tokens](#94-snts-simple-nostr-tokens)
 - [10. FAQ](#10-faq)
 - [Appendixes](#appendixes)
   - [I. Implementation Considerations](#i-implementation-considerations)
@@ -431,6 +433,443 @@ This validator can be used by simply mentioning the validator ID since all the d
   <VALIDATOR_ID>
 ]
 ```
+
+### 9.4. SNTs: Simple NOSTR Tokens
+
+A very simple Bitcoin-inspired token system can be implemented via validators.
+
+We'll use `kind:1001` as an example in what follows for the _token flow events_ moving tokens around.
+Likewise, we'll use tags `"y"` and `"z"` for _input token IDs_ and _output token IDs_.
+
+Tokens are abstract entities represented by a UUIDv4 (its ID).
+In order to transfer a token, it needs to be "burned" and a new token created in the same flow event.
+You can think of tokens as 1-Satoshi Bitcoin UTXOs.
+
+A token flow event has the following form:
+
+```json
+{
+  ...,
+  "kind": 1001,
+  ...,
+  "pubkey": <PUBKEY>,
+  ...,
+  "tags": [
+    ...,
+    ["y", <TOKEN_ID>],  // used input IDs
+    ...,
+    ["z", <TOKEN_ID>],  // used output IDs
+    ...
+    ["p", <DESTINATION>],  // mentioned destination pubkeys --- NOTE: the recommended relay URL, if given, is ignored
+    ...
+  ],
+  ...,
+  "content": <CONTENT>,  // the JSON string serialization of the content object detailed below
+  ...
+}
+```
+
+where the content follows:
+
+```json
+{
+  "inputs": [
+    ...,
+    {
+      "id" <TOKEN_ID>,  // UUIDv4 --- the ID of an unburned output
+      "nonce": <NONCE>  // NONCE --- the NONCE of said output, such that SHA-256(NONCE) == Output(ID).commitment
+    }
+    ...
+  ],
+  "outputs": [
+    ...,
+    {
+      "id": <TOKEN_ID>,              // UUIDv4 --- a random ID to associate to this output
+      "commitment": <COMMITMENT>,    // SHA-256 of NONCE --- public commitment to the value of NONCE
+      "secret": <SECRET>,            // Encrypt(DESTINATION, NONCE) --- private revelation of the value of NONCE
+      "destination": <DESTINATION>   // PubKey --- the PubKey of the output's destination,
+    },
+    ...
+  ]
+}
+```
+
+All input IDs mentioned in `.inputs.*.id` must appear in `"y"` tags.
+
+All output IDs mentioned in `.outputs.*.id` must appear in `"z"` tags.
+
+All pubkeys mentioned in `.outputs.*.destination` must appear in `"p"` tags.
+
+A validator for Token Flow events follows:
+
+```javascript
+// Requires the "NostrRead", "NostrValidate", "Crypto", and "Async" capabilities
+
+/**
+ * NOSTR Tokens Validator
+ *
+ * This generic NOSTR Tokens Validator can be attached to a NOSTR Token Flow Event to validate
+ * the actions taken therein.
+ * It has been coded so as to allow several different policies, by tweaking the values of:
+ *
+ * - BURN: a boolean, determining whether it is permitted to burn tokens away
+ * - RELAYS: a string Set with the URLs of the preferred relays to use; consensus is required of at
+ *     least MORE than half of them
+ * - PRE_MINTED: a Set of outputs that are considered pre-minted and pre-assigned
+ * - ALLOWED_MINTERS: a Set of pubkeys or prefixes thereof that are allowed to mint tokens
+ *
+ * Setting values for ALLOWED_MINTERS allows for the emission policy to be controlled tightly, only
+ * allowing some, all, or none to add liquidity.
+ * For extreme examples, consider:
+ *
+ * - ALLOWED_MINTERS = new Set(): this allows no-one to mint tokens, all tokens in existence are those
+ *     provided in the PRE_MINTED array and none more (consequently, if the PRE_MINTED array is
+ *     empty, these tokens basically become impossible to use at all)
+ * - ALLOWED_MINTERS = new Set([""]): this allows everyone to mint tokens, since "" is a prefix of any
+ *     pubkey, anyone can create liquidity
+ *
+ * Setting a value for PRE_MINTED makes it so that the given outputs are originally available, thus
+ * it allows for emission outside of the dynamic control of ALLOWED_MINTERS.
+ * This makes it possible to implement, eg, finite-supply tokens (setting ALLOWED_MINTERS to Set()).
+ *
+ * Usage merely requires adding a tag of the form:
+ *
+ *     ["v", "<VALIDATOR_MESSAGE_ID>"]
+ *
+ * to NOSTR Token Flow events.
+ *
+ */
+
+const BURN = true;                  // whether burning Tokens is allowed
+const RELAYS = new Set();           // a set of relay URLs to use
+const PRE_MINTED = new Set();       // a set of pre-minted outputs
+const ALLOWED_MINTERS = new Set();  // a set of pubkeys or prefixes that are indeed allowed to mint
+
+/**
+ * Check if two sets contain the same elements
+ *
+ * @param {Set} a - First set to compare
+ * @param {Set} b - Second set to compare
+ * @return {boolean}  True if both sets contain the same elements, false otherwise
+ */
+function equalSets(a, b) {
+  return a.size === b.size && new Set([...a, ...b]).size === a.size;
+}
+
+/**
+ * Calculate the SHA-256 of the given string, and return it as a hex string
+ *
+ * @param {string} data - The data to hash
+ * @return {string}  The resulting hex string
+ */
+async function sha256toHex(data) {
+  return Array.from(
+      new Uint8Array(
+        await crypto.subtle.digest(
+          "SHA-256",
+          (new TextEncoder()).encode(data),
+        )
+      )
+    )
+    .map(bytes => bytes.toString(16).padStart(2, "0"))
+    .join("")
+  ;
+}
+
+/**
+ * Retrieve the valid NOSTR events selected by the given filter from the given relay
+ *
+ * @param {object[]} filters - Filter to apply
+ * @param {string} relay - Relay to use
+ * @return {object[]}  The resulting events
+ */
+function nostrReadValidated(filters, relay) {
+  return NOSTR.read(filter, relay).filter(NOSTR.validate);
+}
+
+/**
+ * Retrieve the NOSTR Token Flow events using the given input or output IDs, up until the given moment
+ *
+ * @param {"y"|"z"} tagName - the tag to search for
+ * @param {number[]} ids - The input IDs to search for
+ * @param {number} until - The maximum timestamp to consider
+ * @return {object[]}  The resulting events
+ */
+function fetchFromRelays(tagName, ids, until) {
+  const filter = [{"kinds": [1001], `#${tagName}`: ids, "until": until}];
+
+  var entries = {};
+  for (const RELAY of RELAYS) {
+    for (const event of nostrReadValidated(filter, RELAY)) {
+      if (!entries.has(event.id)) {
+        entries[event.id] = {"count": 0, "event": event};
+      }
+      entries[event.id].count++;
+    }
+  }
+
+  return entries
+    .values()
+    .filter(entry => (RELAYS.length >> 1) < entry.count)
+    .map(entry => entry.event)
+  ;
+}
+
+/**
+ * Retrieve the input blocks using the given input IDs, up until the given moment
+ *
+ * @param {number[]} ids - The input IDs to search for
+ * @param {number} until - The maximum timestamp to consider
+ * @return {object[]}  The input blocks using the given input IDs
+ */
+function fetchInputs(ids, until) {
+  return fetchFromRelays("y", ids, until)
+    .flatMap(event => JSON.parse(event.content).inputs)
+    .filter(input => ids.has(input.id))
+  ;
+}
+
+/**
+ * Retrieve the output blocks using the given output IDs, up until the given moment
+ *
+ * @param {number[]} ids - The output IDs to search for
+ * @param {number} until - The maximum timestamp to consider
+ * @return {object[]}  The output blocks using the given output IDs
+ */
+function fetchOutputs(ids, until) {
+  return fetchFromRelays("z", ids, until)
+    .flatMap(event => JSON.parse(event.content).outputs)
+    .concat(Array.from(PRE_MINTED))
+    .filter(output => ids.has(output.id))
+  ;
+}
+
+/**
+ * Retrieve the set of first-values associated to the tag name given in the event given
+ *
+ * @param {string} tagName - The tag name to look for
+ * @param {object} event - The event to extract tag values from
+ * @return {Set}  The set of values
+ */
+function tagValues(tagName, event) {
+  var result = new Set(
+    events.tags
+      .map(tag => tag[0] === tagName ? tag[1] : undefined)
+  );
+  result.delete(undefined);
+  return result;
+}
+
+
+const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, extract event and tagIndex
+
+const [ tagName ] = event.tags[tagIndex];  // extract the validator tag name
+
+if (tagName !== "v") {      // (OPTIONAL) verify that we are indeed passed a validator tag
+  return false;             // fail if we're not
+}                           //
+if (event.kind !== 1001) {  // verify that we're being run on a Token Flow event
+  return false;             // fail if we're not
+}                           //
+
+const taggedInputs = tagValues("y", event);        // retrieve the set of all input tags
+const taggedOutputs = tagValues("z", event);       // retrieve the set of all output tags
+const taggedDestinations = tagValues("p", event);  // retrieve the set of all destination tags
+
+var seenInputs = new Set();        // initialize seen inputs
+var seenOutputs = new Set();       // initialize seen outputs
+var seenDestinations = new Set();  // initialize seen destinations
+
+const content = JSON.parse(event.content);  // parse the event's content
+
+var total = 0;  // keep running total of how many funds are moved
+
+for (const input of content.inputs) {                          // iterate through each input
+  if (seenInputs.has(input.id)) {                              // verify the input ID is not repeated
+    return false;                                              // fail if it is
+  }                                                            //
+  if ([] !== fetchInputs([input.id], event.created_at)) {      // verify that the input is not
+    return false;                                              // already burnt, fail otherwise
+  }                                                            //
+  const outputs = fetchOutputs([input.id], event.created_at);  // retrieve all outputs associated to this input
+  if (1 !== outputs.length) {                                  // verify there's only one of them
+    return false;                                              // fail otherwise
+  }                                                            //
+  if (output[0].destination != event.pubkey) {                 // verify it's directed to us,
+    return false;                                              // fail otherwise
+  }                                                            //
+  if (sha256toHex(input.nonce) != output[0].commitment) {      // verify it matches the commitment,
+    return false;                                              // fail otherwise
+  }                                                            //
+  total++;                                                     // accumulate running total
+  seenInputs.add(input.id);                                    // add the current input ID to the seen ones
+}                                                              //
+
+for (const output of content.outputs) {      // iterate through each output
+  if (seenOutputs.has(output.id)) {          // verify the output ID is not repeated
+    return false;                            // fail if it is
+  }                                          //
+  total--;                                   // decrease running total
+  seenOutputs.add(output.id);                // add the current output ID to the seen ones
+  seenDestinations.add(output.destination);  // add the destination ID to the seen ones
+}                                            //
+
+if (fetchOutputs(Array.from(seenOutputs), event.created_at) !== []) {  // make sure the newly-created outputs are new
+  return false;                                                        // fail otherwise
+}                                                                      //
+
+if (!equalSets(taggedInputs, seenInputs)) {              // check that all seen inputs are tagged
+  return false;                                          // fail if not
+}                                                        //
+if (!equalSets(taggedOutputs, seenOutputs)) {            // check that all seen outputs are tagged
+  return false;                                          // fail if not
+}                                                        //
+if (!equalSets(taggedDestinations, seenDestinations)) {  // check that all seen destinations are tagged
+  return false;                                          // fail if not
+}                                                        //
+
+if (total < 0) {                                                    // if we're minting tokens
+  return Array.from(ALLOWED_MINTERS)                                // check that at least one allowed minter
+    .some(allowedMinter => event.pubkey.startsWith(allowedMinter))  // is a prefix of the current pubkey
+  ;                                                                 //
+} else if (0 < total) {                                             // if we're burning tokens
+  return BURN;                                                      // this is valid only if burning allowed
+} else {                                                            // otherwise
+  return true;                                                      // everything looks fine, validate
+}                                                                   //
+```
+
+> **NOTE:** although care has been taken when writing this validator, it should go without saying that this is merely an example and **NOT** intended to be used in any production capacity whatsoever.
+
+As the doclock in the validator proper reads, the `BURN`, `RELAYS`, `PRE_MINTED`, and `ALLOWED_MINTERS` can be tweaked to realize several different token policies.
+
+One possible usage of these simple tokens would be to provide ownership attestation: showing that certain token IDs are indeed in possession of the event signer.
+One such use case can in turn be realized by the following validator:
+
+```javascript
+// Requires the "NostrRead", "NostrValidate", and "Async" capabilities
+
+/**
+ * NOSTR Token Ownership
+ *
+ * This generic NOSTR Token Ownership validator can be attached to a NOSTR Event to validate that the
+ * event sender indeed has ownership of the given amount of NOSTR Tokens at the given moment.
+ * It has been coded so as to interoperate with the NOSTR Tokens Validator above:
+ *
+ * - RELAYS: a string Set with the URLs of the preferred relays to use; consensus is required of at
+ *     least MORE than half of them
+ * - PRE_MINTED: a Set of outputs that are considered pre-minted and pre-assigned
+ *
+ * Setting a value for PRE_MINTED makes it so that the given outputs are originally available, it is
+ * required to be in sync with the one in the corresponding NOSTR Tokens Validator.
+ *
+ * Usage merely requires adding a tag of the form:
+ *
+ *     ["v", "<VALIDATOR_MESSAGE_ID>", "<TOKEN_ID_1>", "<TOKEN_ID_2>", ..., "<TOKEN_ID_N>", ...]
+ *
+ * to NOSTR events.
+ *
+ */
+
+const RELAYS = new Set();      // a set of relay URLs to use
+const PRE_MINTED = new Set();  // a set of pre-minted outputs
+
+/**
+ * Retrieve the valid NOSTR events selected by the given filter from the given relay
+ *
+ * @param {object[]} filters - Filter to apply
+ * @param {string} relay - Relay to use
+ * @return {object[]}  The resulting events
+ */
+function nostrReadValidated(filters, relay) {
+  return NOSTR.read(filter, relay).filter(NOSTR.validate);
+}
+
+/**
+ * Retrieve the NOSTR Token Flow events using the given input or output IDs, up until the given moment
+ *
+ * @param {"y"|"z"} tagName - the tag to search for
+ * @param {number[]} ids - The input IDs to search for
+ * @param {number} until - The maximum timestamp to consider
+ * @return {object[]}  The resulting events
+ */
+function fetchFromRelays(tagName, ids, until) {
+  const filter = [{"kinds": [1001], `#${tagName}`: ids, "until": until}];
+
+  var entries = {};
+  for (const RELAY of RELAYS) {
+    for (const event of nostrReadValidated(filter, RELAY)) {
+      if (!entries.has(event.id)) {
+        entries[event.id] = {"count": 0, "event": event};
+      }
+      entries[event.id].count++;
+    }
+  }
+
+  return entries
+    .values()
+    .filter(entry => (RELAYS.length >> 1) < entry.count)
+    .map(entry => entry.event)
+  ;
+}
+
+/**
+ * Retrieve the input blocks using the given input IDs, up until the given moment
+ *
+ * @param {number[]} ids - The input IDs to search for
+ * @param {number} until - The maximum timestamp to consider
+ * @return {object[]}  The input blocks using the given input IDs
+ */
+function fetchInputs(ids, until) {
+  return fetchFromRelays("y", ids, until)
+    .flatMap(event => JSON.parse(event.content).inputs)
+    .filter(input => ids.has(input.id))
+  ;
+}
+
+/**
+ * Retrieve the output blocks using the given output IDs, up until the given moment
+ *
+ * @param {number[]} ids - The output IDs to search for
+ * @param {number} until - The maximum timestamp to consider
+ * @return {object[]}  The output blocks using the given output IDs
+ */
+function fetchOutputs(ids, until) {
+  return fetchFromRelays("z", ids, until)
+    .flatMap(event => JSON.parse(event.content).outputs)
+    .concat(Array.from(PRE_MINTED))
+    .filter(output => ids.has(output.id))
+  ;
+}
+
+
+const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, extract event and tagIndex
+
+const [ tagName, , ...tokenIds ] = event.tags[tagIndex];  // extract the validator tag name and token IDs
+
+if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
+  return false;         // fail if we're not
+}                       //
+
+const tokenIdsClean = Set(tokenIds);                      // remove duplicates from input token IDs
+const outputs = fetchOutputs(                             // retrieve all outputs generating these
+    Array.from(tokenIdsClean),                            // token IDs
+    event.created_at                                      //
+  )                                                       //
+  .filter(output => output.destination === event.pubkey)  // keep only those that come our way
+;                                                         //
+
+if (outputs.length !== tokenIdsClean.length) {                          // verify we have them all
+  return false;                                                         // fail otherwise
+}                                                                       //
+if (fetchInputs(Array.from(tokenIdsClean), event.created_at) !== []) {  // verify no inputs are used
+  return false;                                                         // fail otherwise
+}                                                                       //
+
+return true;  // if we got here, everything is fine
+```
+
+> **NOTE:** although care has been taken when writing this validator, it should go without saying that this is merely an example and **NOT** intended to be used in any production capacity whatsoever.
 
 ## 10. FAQ
 
