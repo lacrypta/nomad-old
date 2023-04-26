@@ -11,7 +11,7 @@
 `tag:v` `tag:v-language` `tag:v-hints`
 
 `depends:01` `depends:16`
-`mentions:13`
+`mentions:13` `mentions:09`
 
 ---
 
@@ -137,6 +137,8 @@ Clients can take the following as guidelines regarding hints:
 - a validator using either the `NostrRead` or `NostrValidate` capabilities can conservatively be assumed to be hinted with `"LAZY"`; clients are encouraged to ignore the `"EAGER"` hint for validators using either the `NostrRead` or `NostrValidate` capabilities, except when they have been previously vetted by the client implementation team.
 
 > Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) validator definition events should be stored and **MUST NOT** be replaced at all.
+
+Finally, `kind:1111` validator definition events **MUST NOT** be deleted and both relays and clients **MUST** ignore `kind:5` events (ie deletion events, see [NIP-09](https://github.com/nostr-protocol/nips/blob/master/09.md)) referring to them.
 
 ## 6. Validator Tag
 
