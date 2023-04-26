@@ -7,7 +7,7 @@
 
 `draft` `optional`
 
-`kind:9`
+`kind:9` `kind:10`
 
 `depends:01` `depends:16` `depends:58`
 `mentions:33`
@@ -18,8 +18,11 @@
 - [2. Short Description](#2-short-description)
 - [3. Overview](#3-overview)
 - [4. Immutable Badge Definition Event](#4-immutable-badge-definition-event)
-- [5. Client Behavior](#5-client-behavior)
-- [6. FAQ](#6-faq)
+- [5. Immutable Badge Award Event](#5-immutable-badge-award-event)
+  - [5.1. Fragile Badge Award Event](#51-fragile-badge-award-event)
+- [6. Profile Badges Event](#6-profile-badges-event)
+- [7. Client Behavior](#7-client-behavior)
+- [8. FAQ](#8-faq)
 
 ---
 
@@ -39,28 +42,153 @@ In order to address this last issue, we reserve a new kind, and stipulate that m
 
 ## 3. Overview
 
-This document is organized as follows: first we introduce the new [Immutable Badge Definition Event](#4-immutable-badge-definition-event), finally we deal with the [Client Behavior](#5-client-behavior).
-We close with a short [FAQ](#6-faq) section.
+This document is organized as follows: first we introduce the new [Immutable Badge Definition](#4-immutable-badge-definition-event) and [Immutable Badge Award](#5-immutable-badge-award-event) events, next we deal with changes to the [Profile Badges Event](#6-profile-badges-event), finally we deal with [Client Behavior](#7-client-behavior).
+We close with a short [FAQ](#8-faq) section.
 
 ## 4. Immutable Badge Definition Event
 
-An _immutable badge definition event_ is defined as an event with `kind:9`.
+An _immutable badge definition_ event is defined as en event of `kind:9` of the following form:
 
-For ease of interoperability with existing client implementations, immutable badge definition events follow ALL guidelines [Badge Definition Events](https://github.com/nostr-protocol/nips/blob/master/58.md#badge-definition-event) must follow, save for the usage of a different kind.
-This includes the usage of the `"d"` tag.
+```json
+{
+    ...,
+    "kind": 9,
+    ...,
+    "tags": [
+        ...,
+        ["name", <BADGE_NAME>],
+        ...,
+        ["description", <DESCRIPTION_TEXT>]
+        ...,
+        ["image", <IMAGE_URL>, <WIDTH_X_HEIGHT>],
+        ...,
+        ["thumb", <THUMBNAIL_URL_1>, <WIDTH_X_HEIGHT_1>],
+        ...,
+        ["thumb", <THUMBNAIL_URL_2>, <WIDTH_X_HEIGHT_2>],
+        ...
+    ],
+    ...
+}
+```
+
+Where the following tags **MAY** be present:
+
+- **`"name"`:** a short name for the badge.
+- **`"description"`:** a textual representation of the image, the meaning behind the badge, or the reason of it's issuance.
+- **`"image"`:** the URL of a high-resolution image representing the badge.
+  The second value optionally specifies the dimensions of the image as `<WIDTH>x<HEIGHT>` in pixels.
+  Badge recommended dimensions is `1024x1024` pixels.
+- **`"thumb"`:** an URL pointing to a thumbnail version of the image referenced in the `"image"` tag.
+  The second value optionally specifies the dimensions of the thumbnail as `<WIDTH>x<HEIGHT>` in pixels.
+  Zero or more `"thumb"` tags **MAY** be given.
+
+(these definition were lifter verbatim from the [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md) ones).
+
+The event's `.content` field **MAY** contain whatever content the issuer desires, and **SHOULD** be ignored for the purposes of this NIP.
 
 > Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) immutable badge definition events should be stored and **MUST NOT** be replaced at all.
 
-## 5. Client Behavior
+## 5. Immutable Badge Award Event
 
-Other than the behavioral changes induced by the usage of a different kind, clients **MUST** follow the guidelines set out in [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md).
-Nothing, other than querying for a new kind, should change client-side.
+An _immutable badge award_ event is defined as en event of `kind:10` of the following form:
 
-There _is_ however the issue of collisions: the existence of both a `kind:30009` and `kind:9` event for the same author and `"d"` tag.
-In such a case, `kind:9` event always take precedence.
-This is so that the promise `kind:9` makes can be upheld, and still have a form of interoperability with `kind:30009`.
+```json
+{
+    ...
+    "kind": 10,
+    ...,
+    "tags": [
+        ...,
+        ["e", <IMMUTABLE_BADGE_DEFINITION_EVENT_ID>],  // kind:9
+        ...,
+        ["p", <RECIPIENT_PUBKEY_1>],
+        ...,
+        ["p", <RECIPIENT_PUBKEY_2>],
+        ...
+    ],
+    ...
+}
+```
 
-## 6. FAQ
+Where the following tags **MUST** be present:
+
+- **`"e"`:** this tag references the `kind:9` immutable badge definition event being awarded.
+  Clients **SHOULD** validate that the event referred to has the same `.pubkey` value as this event.
+- **`"p"`:** one or more of these tags reference the public keys of the users being awarded the tag referred to above.
+
+The event's `.content` field **MAY** contain whatever content the issuer/awarder desires, and **SHOULD** be ignored for the purposes of this NIP.
+
+> Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) immutable badge award events should be stored and **MUST NOT** be replaced at all.
+
+An additional award event is defined for special cases treatment.
+
+### 5.1. Fragile Badge Award Event
+
+A _fragile_ badge award event is defined as an event of `kind:10` of the following form:
+
+```json
+{
+    ...
+    "kind": 10,
+    ...,
+    "tags": [
+        ...,
+        ["e", <BADGE_DEFINITION_EVENT_ID>],  // kind:30009
+        ...,
+        ["p", <RECIPIENT_PUBKEY_1>],
+        ...,
+        ["p", <RECIPIENT_PUBKEY_2>],
+        ...
+    ],
+    ...
+}
+```
+
+Where the _only_ differences from an immutable badge award event are that the event referred to by the mandatory `"e"` tag can be of `kind:30009` instead of `kind:9`.
+This allows for an immutable badge award event to refer to a [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md)-style badge.
+
+> Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) fragile badge award events should be stored and **MUST NOT** be replaced at all.
+
+## 6. Profile Badges Event
+
+Profile badges events as defined in [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md) are extended herein.
+
+These are events of `kind:30008`, having a `"d"` tag value equal to `"badges"` (cf. `"profile_badges"` in [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md)), of the following form:
+
+```json
+{
+    ...,
+    "kind": 30008,
+    ...,
+    "tags": [
+        ...,
+        ["d", "badges"],
+        ...,
+        ["e", <IMMUTABLE_BADGE_DEFINITION_EVENT_ID>],  // kind:9
+        ["e", <IMMUTABLE_BADGE_AWARD_EVENT_ID>],  // kind:10
+        ...,
+        ["a", <BADGE_DEFINITION_LINK>],  // 30009:<ISSUER_PUBKEY>:<BADGE_ID>
+        ["e", <BADGE_AWARS_EVENT_ID>],  // kind:8
+        ...
+    ],
+    ...
+}
+```
+
+Where the following tags **MUST** be present:
+
+- **`"d"`:** the value **MUST** equal the unique identifier `"badges"`.
+
+Additionally, there may be zero or more ordered consecutive pairs of either of these tags:
+
+- **`"e"` / `"e"`:** in this configuration, the first `"e"` tag refers to an immutable badge definition event (ie. `kind:9`), the second `"e"` tag refers to an immutable (or fragile) badge award event (ie. `kind:10`).
+  In turn, the `"e"` tag of the event referred to by this pair's second `"e"` tag **MUST** equal this pair's first `"e"` tag.
+- **`"a"` / `"e"`:** in this configuration, the `"a"` tag refers to a [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md) badge definition event (ie. the value of the `"a"` tag should be of the form `"30009:<ISSUER_PUBKEY>:<BADGE_ID>"`), and the `"e"` tag refers to a badge award event (ie. `kind:8`).
+  In turn, the `"a"` tag of the event referred to by this pair's `"e"` tag **MUST** equal this pair's `"a"` tag.
+
+## 7. Client Behavior
+
+## 8. FAQ
 
 **Why prevent badges from being modified? Can we not simply not modify them and leave it at that?**
 
@@ -69,9 +197,3 @@ Rather, it _prevents_ any modification whatsoever to the badge definition itself
 
 There's a difference between being able to change something and no doing it, and having a guarantee that it will not ever change.
 This NIP addresses the latter.
-
-**Why do `kind:9` events take precedence over `kind:30009` in case of collisions?**
-
-Because `kind:9` PROMISES that once its existence is known, no changes can be made to the badge definition, allowing for `kind:30009` to override that would make liars of ourselves.
-
-On the other hand, establishing that particular precedence allows for badges to change for a time (by using several `kind:30009` events), and then suddenly settle on a definite version (broadcasting a `kind:9` event).
