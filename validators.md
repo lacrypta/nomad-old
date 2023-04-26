@@ -596,11 +596,17 @@ function nostrReadValidated(filters, relay) {
  * @return {object[]}  The resulting events
  */
 function fetchFromRelays(tagName, ids, until) {
-  const filter = [{"kinds": [1001], `#${tagName}`: ids, "until": until}];
+  const filter = [
+    {
+      "kinds": [1001],
+      `#${tagName}`: ids,
+      "until": until,
+    }
+  ];
 
   var entries = {};
-  for (const RELAY of RELAYS) {
-    for (const event of nostrReadValidated(filter, RELAY)) {
+  for (const relay of RELAYS) {
+    for (const event of nostrReadValidated(filter, relay)) {
       if (!entries.has(event.id)) {
         entries[event.id] = {"count": 0, "event": event};
       }
@@ -608,9 +614,29 @@ function fetchFromRelays(tagName, ids, until) {
     }
   }
 
+  const limit = RELAYS.length >> 1;
+
+  const deletionFilter = [
+    {
+      "kinds": [5],
+      `#e`: [
+        entries
+          .values()
+          .filter(entry => limit < entry.count)
+          .map(entry => entry.event.id)
+      ],
+      "until": until,
+    }
+  ];
+  for (const relay of RELAYS) {
+    for (const event of nostrReadValidated(deletionFilter, relay)) {
+      entries[event.id].count--;
+    }
+  }
+
   return entries
     .values()
-    .filter(entry => (RELAYS.length >> 1) < entry.count)
+    .filter(entry => limit < entry.count)
     .map(entry => entry.event)
   ;
 }
@@ -794,11 +820,17 @@ function nostrReadValidated(filters, relay) {
  * @return {object[]}  The resulting events
  */
 function fetchFromRelays(tagName, ids, until) {
-  const filter = [{"kinds": [1001], `#${tagName}`: ids, "until": until}];
+  const filter = [
+    {
+      "kinds": [1001],
+      `#${tagName}`: ids,
+      "until": until,
+    }
+  ];
 
   var entries = {};
-  for (const RELAY of RELAYS) {
-    for (const event of nostrReadValidated(filter, RELAY)) {
+  for (const relay of RELAYS) {
+    for (const event of nostrReadValidated(filter, relay)) {
       if (!entries.has(event.id)) {
         entries[event.id] = {"count": 0, "event": event};
       }
@@ -806,9 +838,29 @@ function fetchFromRelays(tagName, ids, until) {
     }
   }
 
+  const limit = RELAYS.length >> 1;
+
+  const deletionFilter = [
+    {
+      "kinds": [5],
+      `#e`: [
+        entries
+          .values()
+          .filter(entry => limit < entry.count)
+          .map(entry => entry.event.id)
+      ],
+      "until": until,
+    }
+  ];
+  for (const relay of RELAYS) {
+    for (const event of nostrReadValidated(deletionFilter, relay)) {
+      entries[event.id].count--;
+    }
+  }
+
   return entries
     .values()
-    .filter(entry => (RELAYS.length >> 1) < entry.count)
+    .filter(entry => limit < entry.count)
     .map(entry => entry.event)
   ;
 }
