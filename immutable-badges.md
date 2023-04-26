@@ -25,7 +25,7 @@
 
 ## 1. Motivation
 
-Te purpose of this NIP is to provide immutable badge definitions that may not be changed once created.
+The purpose of this NIP is to provide immutable badge definitions that may not be changed once created.
 
 ## 2. Short Description
 

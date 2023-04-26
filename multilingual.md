@@ -21,7 +21,7 @@
 
 ## 1. Motivation
 
-Te purpose of this NIP is to provide a multilingual alternative to the proofs of [NIP-39](https://github.com/nostr-protocol/nips/blob/master/39.md).
+The purpose of this NIP is to provide a multilingual alternative to the proofs of [NIP-39](https://github.com/nostr-protocol/nips/blob/master/39.md).
 
 ## 2. Short Description
 

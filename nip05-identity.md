@@ -21,7 +21,7 @@
 
 ## 1. Motivation
 
-Te purpose of this NIP is to provide means for users to establish their identity against one or more [NIP-05](https://github.com/nostr-protocol/nips/blob/master/05.md) aliases.
+The purpose of this NIP is to provide means for users to establish their identity against one or more [NIP-05](https://github.com/nostr-protocol/nips/blob/master/05.md) aliases.
 
 ## 2. Short Description
 

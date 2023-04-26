@@ -24,7 +24,7 @@
 
 ## 1. Motivation
 
-Te purpose of this NIP is to provide real-time, user-initiated, alerting from one user to one or more others, and back.
+The purpose of this NIP is to provide real-time, user-initiated, alerting from one user to one or more others, and back.
 
 ## 2. Short Description
 
