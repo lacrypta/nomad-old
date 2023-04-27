@@ -769,7 +769,7 @@ if (total < 0) {                                                    // if we're 
 
 > **NOTE:** although care has been taken when writing this validator, it should go without saying that this is merely an example and **NOT** intended to be used in any production capacity whatsoever.
 
-As the doclock in the validator proper reads, the `BURN`, `RELAYS`, `PRE_MINTED`, and `ALLOWED_MINTERS` can be tweaked to realize several different token policies.
+As the docblock in the validator proper reads, the `BURN`, `RELAYS`, `PRE_MINTED`, and `ALLOWED_MINTERS` can be tweaked to realize several different token policies.
 
 One possible usage of these simple tokens would be to provide ownership attestation: showing that certain token IDs are indeed in possession of the event signer.
 One such use case can in turn be realized by the following validator:

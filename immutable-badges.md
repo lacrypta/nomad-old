@@ -168,7 +168,7 @@ These are events of `kind:30008`, having a `"d"` tag value equal to `"badges"` (
         ["e", <IMMUTABLE_BADGE_AWARD_EVENT_ID>],  // kind:10
         ...,
         ["a", <BADGE_DEFINITION_LINK>],  // 30009:<ISSUER_PUBKEY>:<BADGE_ID>
-        ["e", <BADGE_AWARS_EVENT_ID>],  // kind:8
+        ["e", <BADGE_AWARDS_EVENT_ID>],  // kind:8
         ...
     ],
     ...
