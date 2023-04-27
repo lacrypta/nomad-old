@@ -1708,7 +1708,7 @@ The following table details what symbols are made available by each capability, 
 | `Intl.Segmenter.prototype.resolvedOptions()`                | -                | -            |
 | `Intl.Segmenter.prototype.segment()`                        | -                | -            |
 | `Array.fromAsync()`                                         | `Async`          | -            |
-| `AsyncFunction`                                             | `Async`          | -            |
+| `AsyncFunction`[^async-function]                            | `Async`          | -            |
 | `AsyncFunction.AsyncFunction()`                             | `Async`          | -            |
 | `AsyncFunction.prototype.constructor`                       | `Async`          | -            |
 | `AsyncFunction.prototype[@@toStringTag]`                    | `Async`          | -            |
@@ -2026,3 +2026,6 @@ The following table details what symbols are made available by each capability, 
 | `Response.formData()`                                       | `Fetch`          | `Async`      |
 | `Response.json()`                                           | `Fetch`          | `Async`      |
 | `Response.text()`                                           | `Fetch`          | `Async`      |
+
+[^async-function]: The `AsyncFunction` global object is not predefined in JavaScript, but rather defined as `const AsyncFunction = async function () {}.constructor;` (see: [`AsyncFunction`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction/AsyncFunction)).
+Nonetheless, clients supporting the `Async` capability **MUST** provide the `AsyncFunction` global object defined as indicated above when executing a validator with the `Async` capability.
