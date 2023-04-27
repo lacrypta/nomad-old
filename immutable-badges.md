@@ -35,7 +35,7 @@ This can be seen as a feature, or a bug, depending on the use case and the ultim
 When seen as "living" awards that may change in time, a parameterized replaceable event is certainly the tool for the job.
 When seen as "static" achievements, being able to change the definition of a badge post-facto is certainly not desired.
 
-In order to address this last issue, we reserve a new kind, and stipulate that messages of said kind represent [Immutable Badge Definition Events](#4-immutable-badge-definition-event): this allows users awarded one such badge to rest assured that said badge will not change at any future point.
+In order to address this last issue, we reserve two new kinds, and stipulate that messages of said kinds represent [Immutable Badge Definition](#4-immutable-badge-definition-event) and [Immutable Badge Award](#5-immutable-badge-award-event) events: these allow users awarded one such badge to rest assured that said badge will not change at any future point.
 
 ## 3. Overview
 
@@ -79,7 +79,7 @@ Where the following tags **MAY** be present:
   The second value optionally specifies the dimensions of the thumbnail as `<WIDTH>x<HEIGHT>` in pixels.
   Zero or more `"thumb"` tags **MAY** be given.
 
-(these definition were lifter verbatim from the [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md) ones).
+(these definition were lifted verbatim from the [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md) ones, the [recommendations](https://github.com/nostr-protocol/nips/blob/master/58.md#recommendations) therein are applicable here as well).
 
 The event's `.content` field **MAY** contain whatever content the issuer desires, and **SHOULD** be ignored for the purposes of this NIP.
 
@@ -118,6 +118,8 @@ The event's `.content` field **MAY** contain whatever content the issuer/awarder
 > Note that according to [NIP-16](https://github.com/nostr-protocol/nips/blob/master/16.md) immutable badge award events should be stored and **MUST NOT** be replaced at all.
 
 An additional award event is defined for special cases treatment.
+
+Note that the main difference from [NIP-58's Badge Award Event](https://github.com/nostr-protocol/nips/blob/master/58.md#badge-award-event) is that our definition uses `"e"` tags to identify the (Immutable) Badge Definition Event, whereas [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md)'s one uses an `"a"` tag for this purpose.
 
 ### 5.1. Fragile Badge Award Event
 
