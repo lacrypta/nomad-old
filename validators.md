@@ -164,7 +164,9 @@ With the set up taken care of, the source code will get passed a JSON string of 
 
 ```json
 {
+  ...,
   "event": <EVENT_TO_VALIDATE>,
+  ...,
   "tagIndex": <VALIDATOR_TAG_INDEX>,
   ...
 }
