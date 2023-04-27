@@ -5,7 +5,7 @@
 `draft` `optional`
 
 `kind:1111`
-`tag:v` `tag:v-language` `tag:v-hints`
+`tag:v` `tag:v-language` `tag:v-hint`
 
 `depends:01` `depends:16`
 `mentions:13` `mentions:09`
@@ -109,17 +109,16 @@ The `<CAPABILITY>` placeholders **MAY** be omitted altogether if not needed, and
 
 A validator definition event's `.content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `"v-language"` tag, possibly making use of any `<CAPABILITY>` provided.
 
-A validator definition event's `.tags` field **MAY** contain ONE OR MORE `"v-hints"` tags, conforming to the following format:
+A validator definition event's `.tags` field **MAY** contain ONE OR MORE `"v-hint"` tags, conforming to the following format:
 
 ```json
 [
-  "v-hints",
-  <HINT>,
-  ...
+  "v-hint",
+  <HINT>
 ]
 ```
 
-The `<HINT>` placeholder, if present, **SHOULD** be one of:
+The `<HINT>` placeholder **SHOULD** be one of:
 
 - **`"CACHE"`:** the presence of this hint lets the client know that the validator's result can safely be cached (ie. the same event ID will yield the same result),
 - **`"FRESH"`:** the presence of this hint lets the client know that the validator's result can _NOT_ safely be cached (ie. the same event ID won't necessarily yield the same result),
