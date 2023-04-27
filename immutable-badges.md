@@ -19,6 +19,7 @@
   - [5.1. Fragile Badge Award Event](#51-fragile-badge-award-event)
 - [6. Profile Badges Event](#6-profile-badges-event)
 - [7. Client Behavior](#7-client-behavior)
+  - [7.1. The Case of Fragile Badge Awards](#71-the-case-of-fragile-badge-awards)
 - [8. FAQ](#8-faq)
 
 ---
@@ -186,6 +187,22 @@ Additionally, there may be zero or more ordered consecutive pairs of either of t
   In turn, the `"a"` tag of the event referred to by this pair's `"e"` tag **MUST** equal this pair's `"a"` tag.
 
 ## 7. Client Behavior
+
+Clients are encouraged to have a `kind:30008` event with a `"d"` tag of `"badges"` take precedence over a `kind:30008` event with a `"d"` tag of `"profile_badges"`, so that the richer information provided in this new event be rendered if available, and only revert to the legacy one if no `"badges"` alternative is found.
+
+Rendering and ordering client recommendations are unchanged from those outlined in [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md).
+
+The only changes needed are the parsing of **`"e"` / `"e"`** tag pairs in addition to **`"a"` / `"e"`** ones.
+
+### 7.1. The Case of Fragile Badge Awards
+
+[Fragile Badge Awards](#51-fragile-badge-award-event) are designed to afford the profile user a measure of control over what to do when a badge they're displaying changes.
+
+The rationale is that a fragile award should act as a promise of sorts, from the issuer, that a _specific version_ of an updatable badge is to be awarded to the user; upon the definition being updated, the event ID being referred to should no longer exist, and said award should no longer be valid.
+
+Thus, fragile badge awards provide assurances that the awarded badge will either not change, or if it does, will no longer be applicable to the user.
+
+Having said all that, it has been our experience that relays don't usually discard parameterized replaceable events, which makes the event ID originally awarded persist in time for longer than strictly mandated by [NIP-33](https://github.com/nostr-protocol/nips/blob/master/33.md).
 
 ## 8. FAQ
 
