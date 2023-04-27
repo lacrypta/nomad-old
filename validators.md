@@ -411,7 +411,7 @@ const difficulty = event.tags         // although NIP-13 is unclear as to how to
   .reduce(Math.max)                   // describing differing levels of difficulty,
 ;                                     // keeping only the highest of them
 
-var num0s = 0;  // the number of leading 0s
+let num0s = 0;  // the number of leading 0s
 
 // break the ID into 32-bit blocks and fast-forward the count as long as they are 0
 for (let i = 0; i < 32; i += 8) {
@@ -604,7 +604,7 @@ function fetchFromRelays(tagName, ids, until) {
     }
   ];
 
-  var entries = {};
+  let entries = {};
   for (const relay of RELAYS) {
     for (const event of nostrReadValidated(filter, relay)) {
       if (!entries.has(event.id)) {
@@ -678,7 +678,7 @@ function fetchOutputs(ids, until) {
  * @return {Set}  The set of values
  */
 function tagValues(tagName, event) {
-  var result = new Set(
+  let result = new Set(
     events.tags
       .map(tag => tag[0] === tagName ? tag[1] : undefined)
   );
@@ -702,13 +702,13 @@ const taggedInputs = tagValues("y", event);        // retrieve the set of all in
 const taggedOutputs = tagValues("z", event);       // retrieve the set of all output tags
 const taggedDestinations = tagValues("p", event);  // retrieve the set of all destination tags
 
-var seenInputs = new Set();        // initialize seen inputs
-var seenOutputs = new Set();       // initialize seen outputs
-var seenDestinations = new Set();  // initialize seen destinations
+let seenInputs = new Set();        // initialize seen inputs
+let seenOutputs = new Set();       // initialize seen outputs
+let seenDestinations = new Set();  // initialize seen destinations
 
 const content = JSON.parse(event.content);  // parse the event's content
 
-var total = 0;  // keep running total of how many funds are moved
+let total = 0;  // keep running total of how many funds are moved
 
 for (const input of content.inputs) {                          // iterate through each input
   if (seenInputs.has(input.id)) {                              // verify the input ID is not repeated
@@ -828,7 +828,7 @@ function fetchFromRelays(tagName, ids, until) {
     }
   ];
 
-  var entries = {};
+  let entries = {};
   for (const relay of RELAYS) {
     for (const event of nostrReadValidated(filter, relay)) {
       if (!entries.has(event.id)) {
@@ -1012,7 +1012,9 @@ The execution environment will vary depending on the actual type of execution ma
 
 ```javascript
 try {
-  return (new Function(validatorEvent.content)).apply(
+  return Function(
+    '"use strict";' + validatorEvent.content,
+  ).apply(
     {},
     JSON.stringify([event, tagIndex]),
   );
