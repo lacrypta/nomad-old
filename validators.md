@@ -1025,6 +1025,21 @@ try {
 
 where `event` and `tagIndex` are as above, and `validatorEvent` is the validator definition event referred to by ID in the event's `"v"` tag.
 
+> If the client supports the `Async` capability (see below) and the validator requests the `Async` capability, this expression becomes:
+>
+> ```javascript
+> try {
+>   return await AsyncFunction(
+>     '"use strict";' + validatorEvent.content,
+>   ).apply(
+>     {},
+>     JSON.stringify([event, tagIndex]),
+>   );
+> } catch {
+>   return false;
+> }
+> ```
+
 The [`DefaultLocale()`](https://402.ecma-international.org/4.0/#sec-defaultlocale) abstract operation **MUST** return the `C` locale.
 
 No support is explicitly provided for JavaScript Events, but conforming clients are free to define a capability (perhaps called `Events`) to signal usage and support for this functionality.
