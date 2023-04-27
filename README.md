@@ -1,7 +1,7 @@
 <!-- markdownlint-enable -->
 <!-- markdownlint-disable MD013 -->
 
-# NIP Proposals
+# NIP Proposals (2023 NOSTR Hackaton)
 
 In this repository you'll find our NIP proposals.
 These are:
@@ -10,4 +10,4 @@ These are:
 - **[Multilingual `"i"` Tags](multilingual.md):** the purpose of this NIP is to provide a multilingual alternative to the proofs of [NIP-39](https://github.com/nostr-protocol/nips/blob/master/39.md).
 - **[NIP-05 `"i"` Claim Type](nip05-identity.md):** the purpose of this NIP is to provide means for users to establish their identity against one or more [NIP-05](https://github.com/nostr-protocol/nips/blob/master/05.md) aliases.
 - **[Ping / Pong Events](ping-pong.md):** the purpose of this NIP is to provide real-time, user-initiated, alerting from one user to one or more others, and back.
-- **[Immutable Badge Definition Events](immutable-badges.md):** the purpose of this NIP is to provide immutable badge definitions that may not be changed once created.
+- **[Immutable Badges](immutable-badges.md):** the purpose of this NIP is to provide immutable badge definitions that may not be changed once created.
