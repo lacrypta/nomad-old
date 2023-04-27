@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD043 -->
 
 # NIP Proposals (2023 NOSTR Hackaton)
 
