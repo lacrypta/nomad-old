@@ -8,6 +8,8 @@
 
 `v-language:javascript`
 
+`version:1`
+
 `capability:Async`
 `capability:Date`
 `capability:Streams`
@@ -31,6 +33,8 @@
 ## 1. General Conventions
 
 The `<LANGUAGE>` placeholder **MUST** be `"javascript"`.
+
+The `<LANGUAGE_VERSION>` placeholder **MUST** be `"1"`.
 
 The validator definition event's `.content` **MUST** be ES6-compliant.
 

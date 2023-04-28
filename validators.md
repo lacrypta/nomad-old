@@ -97,14 +97,18 @@ A validator definition event's `.tags` field **MUST** include ONE AND ONLY ONE `
 [
   "v-language",
   <LANGUAGE>,
+  <LANGUAGE_VERSION>,
   <CAPABILITY>,
   ...
 ]
 ```
 
-The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones listed in [Appendix III](#iii-recognized-v-language-tags), although clients can support languages not explicitly listed therein, and said list may be expanded upon at a later time.
+The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones alluded to in [Appendix III](#iii-recognized-v-language-tags), although clients can support languages not explicitly alluded to therein, and said set of languages may be expanded upon at a later time.
 
-The `<CAPABILITY>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary strings; if given, though, they **SHOULD** correspond to those specified in [Appendix III](#iii-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
+The `<LANGUAGE_VERSION>` placeholder **MUST** be a string, and it **SHOULD** correspond to those alluded to in [Appendix III](#iii-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
+The purpose of this placeholder is _not_ to determine the source code language version _per se_, but rather to indicate what conventions the validator adheres to (eg. the protocol used to marshall / unmarshall parameters and return values, or general environmental conventions).
+
+The `<CAPABILITY>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary strings; if given, though, they **SHOULD** correspond to those alluded to in [Appendix III](#iii-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
 
 A validator definition event's `.content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `"v-language"` tag, possibly making use of any `<CAPABILITY>` provided.
 
