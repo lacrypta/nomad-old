@@ -25,7 +25,7 @@ The NOMAD Project focuses on the following NIPs:
 - **[Validators](./nips/validators.md):** our project will develop the foundation for creating stateful behavior in Nostr, unlocking a myriad of new functionalities and applications.
   These building blocks will pave the way for a more dynamic and interactive Nostr ecosystem.
 
-Join the N.O.M.A.D. Project at the Hackaton and help us bring Nostr to the forefront of decentralized innovation. Together, we'll create a brighter, more powerful future for the Nostr community.
+Join the NOMAD Project at the Hackaton and help us bring Nostr to the forefront of decentralized innovation. Together, we'll create a brighter, more powerful future for the Nostr community.
 
 ## As seen on
 
