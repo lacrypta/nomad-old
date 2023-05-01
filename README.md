@@ -27,4 +27,8 @@ The NOMAD Project focuses on the following NIPs:
 
 [Join the N.O.M.A.D. Project](https://dorahacks.io/buidl/5332) at the [Hackaton](https://dorahacks.io/hackathon/hack-nostr-on) and help us bring Nostr to the forefront of decentralized innovation. Together, we'll create a brighter, more powerful future for the Nostr community.
 
-[![DoraHacks](https://dorahacks.io/_nuxt/logo.d271a54d.svg)](https://dorahacks.io)
+---
+
+## As seen on
+<!-- markdownlint-disable-next-line MD041 -->
+[![NOSTR Hackaton](https://cdn.dorahacks.io/static/files/187bc856d26fe494a719b9b4e2f873ea.jpg@.webp)](https://dorahacks.io/buidl/5332)
