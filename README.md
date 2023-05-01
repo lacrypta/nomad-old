@@ -25,4 +25,6 @@ The NOMAD Project focuses on the following NIPs:
 - **[Validators](validators.md):** our project will develop the foundation for creating stateful behavior in Nostr, unlocking a myriad of new functionalities and applications.
   These building blocks will pave the way for a more dynamic and interactive Nostr ecosystem.
 
-Join the N.O.M.A.D. project at the Hackaton and help us bring Nostr to the forefront of decentralized innovation. Together, we'll create a brighter, more powerful future for the Nostr community.
+[Join the N.O.M.A.D. Project](https://dorahacks.io/buidl/5332) at the [Hackaton](https://dorahacks.io/hackathon/hack-nostr-on) and help us bring Nostr to the forefront of decentralized innovation. Together, we'll create a brighter, more powerful future for the Nostr community.
+
+[![DoraHacks](https://dorahacks.io/_nuxt/logo.d271a54d.svg)](https://dorahacks.io)
