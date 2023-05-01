@@ -1002,5 +1002,5 @@ Although very many such metadata can be conceived of, the following two are imme
 
 The current NIP does not prescribe any languages for usage in the `"v-language"` tag.
 
-However, the [`vips`](vips) directory contains language definitions therein.
-In particular, [VIP-01](vips/vip-01.md) defines the `"javascript"` language as a foundation.
+However, the [`vips`](../vips) directory contains language definitions therein.
+In particular, [VIP-01](../vips/vip-01.md) defines the `"javascript"` language as a foundation.

@@ -16,13 +16,13 @@ The NOMAD Project focuses on the following NIPs:
 
 - **Immutable Badges:** we will establish a standard for issuing permanent badges that identify unique user attributes or achievements, fostering trust and credibility within the Nostr community.
   Two (not necessarily exclusive) alternative proposals are presented:
-  - **[Immutable Badges](immutable-badges.md):** this NIP defines alternative creation, awarding, and profile-type events to deal with immutable badges that can deal with their mutable counterparts as well.
-  - **[Immutable Badges Lite](immutable-badges-lite.md):** this NIP gives semantic meaning to the `.content` field of badge award events so as to realize a form of immutable badges.
-- **[Ping / Pong Events](ping-pong.md):** these gentle reminders will encourage user engagement and interaction, enhancing the overall Nostr experience by prompting users to participate in discussions, share content, or explore new features.
-- **[Multilingual External Identities in Profiles](multilingual-external-identities-in-profiles.md) (NIP-39 _bis_):** embrace Nostr's global community by supporting multiple languages in external identity claims.
+  - **[Immutable Badges](./nips/immutable-badges.md):** this NIP defines alternative creation, awarding, and profile-type events to deal with immutable badges that can deal with their mutable counterparts as well.
+  - **[Immutable Badges Lite](./nips/immutable-badges-lite.md):** this NIP gives semantic meaning to the `.content` field of badge award events so as to realize a form of immutable badges.
+- **[Ping / Pong Events](./nips/ping-pong.md):** these gentle reminders will encourage user engagement and interaction, enhancing the overall Nostr experience by prompting users to participate in discussions, share content, or explore new features.
+- **[Multilingual External Identities in Profiles](./nips/multilingual-external-identities-in-profiles.md) (NIP-39 _bis_):** embrace Nostr's global community by supporting multiple languages in external identity claims.
   This NIP will make Nostr more inclusive and accessible to users worldwide.
-- **[NIP-05 External Identity Claim](nip-05-external-identity-claim.md):** we'll implement a seamless way for users to establish their identity against one or more [NIP-05](https://github.com/nostr-protocol/nips/blob/master/05.md) aliases, strengthening trust and connections within the Nostr network.
-- **[Validators](validators.md):** our project will develop the foundation for creating stateful behavior in Nostr, unlocking a myriad of new functionalities and applications.
+- **[NIP-05 External Identity Claim](./nips/nip-05-external-identity-claim.md):** we'll implement a seamless way for users to establish their identity against one or more [NIP-05](https://github.com/nostr-protocol/nips/blob/master/05.md) aliases, strengthening trust and connections within the Nostr network.
+- **[Validators](./nips/validators.md):** our project will develop the foundation for creating stateful behavior in Nostr, unlocking a myriad of new functionalities and applications.
   These building blocks will pave the way for a more dynamic and interactive Nostr ecosystem.
 
 Join the N.O.M.A.D. Project at the Hackaton and help us bring Nostr to the forefront of decentralized innovation. Together, we'll create a brighter, more powerful future for the Nostr community.
