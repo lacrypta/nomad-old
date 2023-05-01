@@ -3,7 +3,7 @@
 <!-- markdownlint-disable-next-line MD041 -->
 ![The NOMAD Project](./assets/logo.svg)
 
-# NOMAD - Nostr Optimizations for Modernized Advancements and Development
+# Nostr Optimizations for Modernized Advancements and Development
 
 _Unleash the full potential of Nostr with NOMAD, a project aiming to revolutionize Nostr through a series of innovative NIPs that will reshape the decentralized landscape and create limitless possibilities._
 
