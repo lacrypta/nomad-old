@@ -971,11 +971,11 @@ const eRelays = new Set(            // scan all "e" tags and extract the associa
     .map(tag => tag[2])
 );
 
-const valueMaximum = event.tags               // although NIP-69 is unclear as to how to manage
-  .filter(tag => tag[0] === "value_maximum")  // multiple "value_maximum" tags, we take the conservative
-  .map(tag => tag[1])                         // approach and consider multiple "value_maximum" tags as
-  .reduce((a, b) => Math.max(a, b), 0)        // describing differing amounts,
-;                                             // keeping only the highest of them
+const valueMaximum = event.tags                 // although NIP-69 is unclear as to how to manage
+  .filter(tag => tag[0] === "value_maximum")    // multiple "value_maximum" tags, we take the conservative
+  .map(tag => tag[1])                           // approach and consider multiple "value_maximum" tags as
+  .reduce((a, b) => Math.max(a, b), -Infinity)  // describing differing amounts,
+;                                               // keeping only the highest of them
 
 const valueMinimum = event.tags                // although NIP-69 is unclear as to how to manage
   .filter(tag => tag[0] === "value_minimum")   // multiple "value_minimum" tags, we take the conservative
@@ -986,8 +986,13 @@ const valueMinimum = event.tags                // although NIP-69 is unclear as 
 const consensusThreshold = event.tags               // although NIP-69 is unclear as to how to manage
   .filter(tag => tag[0] === "consensus_threshold")  // multiple "consensus_threshold" tags, we take the conservative
   .map(tag => tag[1])                               // approach and consider multiple "consensus_threshold" tags as
-  .reduce((a, b) => Math.max(a, b), 0)              // describing differing timestamps,
+  .reduce((a, b) => Math.max(a, b), -Infinity)      // describing differing timestamps,
 ;                                                   // keeping only the highest of them
+
+// clamp to usable values
+const usableMaximumValue       = valueMaximum       === -Infinity ?  Infinity : valueMaximum      ;
+const usableMinimumValue       = valueMinimum       ===  Infinity ?         0 : valueMinimum      ;
+const usableConsensusThreshold = consensusThreshold === -Infinity ?         0 : consensusThreshold;
 
 const closedAt = event.tags                    // although NIP-69 is unclear as to how to manage
   .filter(tag => tag[0] === "closed_at")       // multiple "closed_at" tags, we take the conservative
@@ -1000,16 +1005,31 @@ const pollOptions = event.tags              // extract all "poll_option" tag val
   .map(tag => tag[1])
 ;
 
-return pRelays.size === 1                               // check that the "e" and "p" relays
-  && eRelays.size === 1                                 // are given and the same, both amongst
-  && Array.from(pRelays)[0] === Array.from(eRelays)[0]  // themselves and each other
-  && 0 <= valueMinimum                                  // check that the minimum value is positive
-  && valueMinimum <= valueMaximum                       // and at most the maximum value
-  && 0 <= consensusThreshold                            // check that the consensus threshold
-  && consensusThreshold <= 100                          // is between 0 and 100
-  && event.created_at < createdAt                       // check that the poll has life to live
-  && pollOptions.size === (new Set(pollOptions)).size   // check that there are no repeated poll options
-  && 2 <= pollOptions.size                              // and that there are at least 2 of them
+// check that if any "p" or "e" tags exist, they specify a single relay,
+// additionally, if they both do, check that they're equal
+if (pRelays.size) {
+  if (pRelays.size !== 1) {
+    return false;
+  }
+  if (eRelays.size) {
+    if (eRelays.size !== 1 || Array.from(pRelays)[0] !== Array.from(eRelays)[0]) {
+      return false;
+    }
+  }
+} else if (eRelays.size) {
+  if (eRelays.size !== 1) {
+    return false;
+  }
+}
+
+return event.content !== ""                              // check that the content is not empty
+  && 0 <= usableMinimumValue                             // check that the minimum value is positive
+  && usableMinimumValue <= usableMaximumValue            // and at most the maximum value
+  && 0 <= usableConsensusThreshold                       // check that the consensus threshold
+  && usableConsensusThreshold <= 100                     // is between 0 and 100
+  && event.created_at < closedAt                         // check that the poll has life to live
+  && pollOptions.length === (new Set(pollOptions)).size  // check that there are no repeated poll options
+  && 2 <= pollOptions.length                             // and that there are at least 2 of them
 ;
 ```
 
