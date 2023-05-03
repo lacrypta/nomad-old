@@ -408,11 +408,11 @@ if (calculatedId !== event.id) {  // if the calculated ID and the event ID aren'
   return false;                   // then fail
 }
 
-const difficulty = event.tags         // although NIP-13 is unclear as to how to manage
-  .filter(tag => tag[0] === "nonce")  // multiple "nonce" tags, we take the conservative
-  .map(tag => tag[2])                 // approach and consider multiple "nonce" tags as
-  .reduce(Math.max)                   // describing differing levels of difficulty,
-;                                     // keeping only the highest of them
+const difficulty = event.tags           // although NIP-13 is unclear as to how to manage
+  .filter(tag => tag[0] === "nonce")    // multiple "nonce" tags, we take the conservative
+  .map(tag => tag[2])                   // approach and consider multiple "nonce" tags as
+  .reduce((a, b) => Math.max(a, b), 0)  // describing differing levels of difficulty,
+;                                       // keeping only the highest of them
 
 let num0s = 0;  // the number of leading 0s
 
