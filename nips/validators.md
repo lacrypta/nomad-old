@@ -32,6 +32,7 @@
   - [9.3. Userland NIP Implementations](#93-userland-nip-implementations)
     - [9.3.1. NIP-13: Proof of Work](#931-nip-13-proof-of-work)
   - [9.4. SNTs: Simple NOSTR Tokens](#94-snts-simple-nostr-tokens)
+  - [9.5. Client-Side Event Hiding](#95-client-side-event-hiding)
 - [10. FAQ](#10-faq)
 - [Appendixes](#appendixes)
   - [I. Implementation Considerations](#i-implementation-considerations)
@@ -933,6 +934,18 @@ return true;  // if we got here, everything is fine
 > **NOTE:** although care has been taken when writing this validator, it should go without saying that this is merely an example and **NOT** intended to be used in any production capacity whatsoever.
 >
 > &#x26a0; &#x26a0; &#x26a0;
+
+### 9.5. Client-Side Event Hiding
+
+Leveraging the usage of replaceable events, one can implement a mechanism by which events can be hidden on the client's end on demand.
+One need simply implement an "always `false`" validator:
+
+```javascript
+return false;
+```
+
+and update the event to hide by tagging it with a `"v"` tag pointing to it.
+This way, clients will pick up the change and hide the event (note that simply ignoring the event change would not be functionally adequate, since the original event being replaced would no longer exist to NOSTR's eyes).
 
 ## 10. FAQ
 
