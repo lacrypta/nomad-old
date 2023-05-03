@@ -770,11 +770,7 @@ if (total < 0) {                                                    // if we're 
 }                                                                   //
 ```
 
-> &#x26a0; &#x26a0; &#x26a0;
->
-> **NOTE:** although care has been taken when writing this validator, it should go without saying that this is merely an example and **NOT** intended to be used in any production capacity whatsoever.
->
-> &#x26a0; &#x26a0; &#x26a0;
+> &#x26a0; **NOTE:** although care has been taken when writing this validator, it should go without saying that this is merely an example and **NOT** intended to be used in any production capacity whatsoever.
 
 As the docblock in the validator proper reads, the `BURN`, `RELAYS`, `PRE_MINTED`, and `ALLOWED_MINTERS` can be tweaked to realize several different token policies.
 
@@ -930,11 +926,7 @@ if (fetchInputs(Array.from(tokenIdsClean), event.created_at) !== []) {  // verif
 return true;  // if we got here, everything is fine
 ```
 
-> &#x26a0; &#x26a0; &#x26a0;
->
-> **NOTE:** although care has been taken when writing this validator, it should go without saying that this is merely an example and **NOT** intended to be used in any production capacity whatsoever.
->
-> &#x26a0; &#x26a0; &#x26a0;
+> &#x26a0; **NOTE:** although care has been taken when writing this validator, it should go without saying that this is merely an example and **NOT** intended to be used in any production capacity whatsoever.
 
 ### 9.5. Client-Side Event Hiding
 
