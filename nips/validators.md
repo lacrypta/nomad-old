@@ -1007,7 +1007,7 @@ return pRelays.size === 1                               // check that the "e" an
   && valueMinimum <= valueMaximum                       // and at most the maximum value
   && 0 <= consensusThreshold                            // check that the consensus threshold
   && consensusThreshold <= 100                          // is between 0 and 100
-  && closedAt <= event.created_at                       // check that the poll has life to live
+  && event.created_at < createdAt                       // check that the poll has life to live
   && pollOptions.size === (new Set(pollOptions)).size   // check that there are no repeated poll options
   && 2 <= pollOptions.size                              // and that there are at least 2 of them
 ;
