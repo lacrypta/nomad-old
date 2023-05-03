@@ -49,7 +49,12 @@ try {
     '"use strict";' + validatorEvent.content,
   ).apply(
     {},
-    JSON.stringify([event, tagIndex]),
+    [
+      JSON.stringify({
+        "event": event,
+        "tagIndex": tagIndex,
+      }),
+    ],
   );
 } catch {
   return false;
@@ -66,7 +71,12 @@ where `event` and `tagIndex` are as above, and `validatorEvent` is the validator
 >     '"use strict";' + validatorEvent.content,
 >   ).apply(
 >     {},
->     JSON.stringify([event, tagIndex]),
+>     [
+>       JSON.stringify({
+>         "event": event,
+>         "tagIndex": tagIndex,
+>       }),
+>     ],
 >   );
 > } catch {
 >   return false;
