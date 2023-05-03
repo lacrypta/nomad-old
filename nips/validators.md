@@ -33,6 +33,7 @@
     - [9.3.1. NIP-13: Proof of Work](#931-nip-13-proof-of-work)
   - [9.4. SNTs: Simple NOSTR Tokens](#94-snts-simple-nostr-tokens)
   - [9.5. Client-Side Event Hiding](#95-client-side-event-hiding)
+  - [9.6. Transport and Application Layer Decoupling](#96-transport-and-application-layer-decoupling)
 - [10. FAQ](#10-faq)
 - [Appendixes](#appendixes)
   - [I. Implementation Considerations](#i-implementation-considerations)
@@ -946,6 +947,81 @@ return false;
 
 and update the event to hide by tagging it with a `"v"` tag pointing to it.
 This way, clients will pick up the change and hide the event (note that simply ignoring the event change would not be functionally adequate, since the original event being replaced would no longer exist to NOSTR's eyes).
+
+### 9.6. Transport and Application Layer Decoupling
+
+Validators enable NOSTR to decouple what's effectively its _transport_ layer from its _application_ layer.
+
+What we mean by this is that NIPs targeting application-specific functionality need not be raised as NIPs themselves, but can rather be implemented as validators.
+This prevents space and attention pollution of the NIP forums, allowing them to focus on transport-layer and wide-sweeping functionality.
+
+As a concrete example of this, consider the `kind:6969` "polls event" proposed in [this issue](https://github.com/nostr-protocol/nips/pull/320).
+A validator validating the _schema_ of one such event can very easily be coded thus:
+
+```javascript
+const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, and extract event and tagIndex
+
+const [ tagName ] = event.tags[tagIndex];  // extract the validator tag from the event
+
+if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
+  return false;         // fail if we're not
+}
+
+const pRelays = new Set(            // scan all "p" tags and extract the associated relays
+  event.tags
+    .filter(tag => tag[0] === "p")
+    .map(tag => tag[2])
+);
+
+const eRelays = new Set(            // scan all "e" tags and extract the associated relays
+  event.tags
+    .filter(tag => tag[0] === "e")
+    .map(tag => tag[2])
+);
+
+const valueMaximum = event.tags               // although NIP-69 is unclear as to how to manage
+  .filter(tag => tag[0] === "value_maximum")  // multiple "value_maximum" tags, we take the conservative
+  .map(tag => tag[1])                         // approach and consider multiple "value_maximum" tags as
+  .reduce((a, b) => Math.max(a, b), 0)        // describing differing amounts,
+;                                             // keeping only the highest of them
+
+const valueMinimum = event.tags                // although NIP-69 is unclear as to how to manage
+  .filter(tag => tag[0] === "value_minimum")   // multiple "value_minimum" tags, we take the conservative
+  .map(tag => tag[1])                          // approach and consider multiple "value_minimum" tags as
+  .reduce((a, b) => Math.min(a, b), Infinity)  // describing differing amounts,
+;                                              // keeping only the lowest of them
+
+const consensusThreshold = event.tags               // although NIP-69 is unclear as to how to manage
+  .filter(tag => tag[0] === "consensus_threshold")  // multiple "consensus_threshold" tags, we take the conservative
+  .map(tag => tag[1])                               // approach and consider multiple "consensus_threshold" tags as
+  .reduce((a, b) => Math.max(a, b), 0)              // describing differing timestamps,
+;                                                   // keeping only the highest of them
+
+const closedAt = event.tags                    // although NIP-69 is unclear as to how to manage
+  .filter(tag => tag[0] === "closed_at")       // multiple "closed_at" tags, we take the conservative
+  .map(tag => tag[1])                          // approach and consider multiple "closed_at" tags as
+  .reduce((a, b) => Math.min(a, b), Infinity)  // describing differing timestamps,
+;                                              // keeping only the lowest of them
+
+const pollOptions = event.tags              // extract all "poll_option" tag values
+  .filter(tag => tag[0] === "poll_option")
+  .map(tag => tag[1])
+;
+
+return pRelays.size === 1                               // check that the "e" and "p" relays
+  && eRelays.size === 1                                 // are given and the same, both amongst
+  && Array.from(pRelays)[0] === Array.from(eRelays)[0]  // themselves and each other
+  && 0 <= valueMinimum                                  // check that the minimum value is positive
+  && valueMinimum <= valueMaximum                       // and at most the maximum value
+  && 0 <= consensusThreshold                            // check that the consensus threshold
+  && consensusThreshold <= 100                          // is between 0 and 100
+  && closedAt <= event.created_at                       // check that the poll has life to live
+  && pollOptions.size === (new Set(pollOptions)).size   // check that there are no repeated poll options
+  && 2 <= pollOptions.size                              // and that there are at least 2 of them
+;
+```
+
+The open question of what exactly constitutes application layer functionality is perhaps beyond the scope of this work, but a rule of thumb may be: _if the would-be NIP would only concern clients, there's a good chance it is indeed application layer functionality_.
 
 ## 10. FAQ
 
