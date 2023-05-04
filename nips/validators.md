@@ -95,7 +95,7 @@ A _validator definition event_ is defined as an event with `kind:1111`.
 
 A validator definition event's `.tags` field **MUST** include ONE AND ONLY ONE `"v-language"` tag, conforming to the following format:
 
-```json
+```javascript
 [
   "v-language",
   <LANGUAGE>,
