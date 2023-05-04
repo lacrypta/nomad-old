@@ -474,7 +474,7 @@ A token flow event has the following form:
 }
 ```
 
-where the content follows:
+where the deserialized content looks like:
 
 ```json
 {
@@ -927,6 +927,19 @@ return true;  // if we got here, everything is fine
 ```
 
 > &#x26a0; **NOTE:** although care has been taken when writing this validator, it should go without saying that this is merely an example and **NOT** intended to be used in any production capacity whatsoever.
+
+In order to use ownership attestation, one would simply add the tag:
+
+```json
+[
+  "v",
+  "<OWNERSHIP_ATTESTATION_VALIDATOR_EVENT_ID>",
+  "<TOKEN_ID>",
+  ...
+]
+```
+
+to an event.
 
 ### 9.5. Client-Side Event Hiding
 
