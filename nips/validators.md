@@ -95,12 +95,12 @@ A _validator definition event_ is defined as an event with `kind:1111`.
 
 A validator definition event's `.tags` field **MUST** include ONE AND ONLY ONE `"v-language"` tag, conforming to the following format:
 
-```javascript
+```json
 [
   "v-language",
-  <LANGUAGE>,
-  <LANGUAGE_VERSION>,
-  <CAPABILITY>,
+  "<LANGUAGE>",
+  "<LANGUAGE_VERSION>",
+  "<CAPABILITY>",
   ...
 ]
 ```
@@ -119,7 +119,7 @@ A validator definition event's `.tags` field **MAY** contain ONE OR MORE `"v-hin
 ```json
 [
   "v-hint",
-  <HINT>
+  "<HINT>"
 ]
 ```
 
@@ -148,8 +148,8 @@ A _validator tag_ is a NOSTR tag using the single-letter **`"v"`** conforming to
 ```json
 [
   "v",
-  <VALIDATOR_DEFINITION_EVENT_ID>,
-  <ADDITIONAL_ARGUMENT>,
+  "<VALIDATOR_DEFINITION_EVENT_ID>",
+  "<ADDITIONAL_ARGUMENT>",
   ...
 ]
 ```
@@ -170,9 +170,9 @@ With the set up taken care of, the source code will get passed a JSON string of 
 ```json
 {
   ...,
-  "event": <EVENT_TO_VALIDATE>,
+  "event": "<EVENT_TO_VALIDATE>",
   ...,
-  "tagIndex": <VALIDATOR_TAG_INDEX>,
+  "tagIndex": "<VALIDATOR_TAG_INDEX>",
   ...
 }
 ```
@@ -311,8 +311,8 @@ One would use such a validator with the given validator tag:
 ```json
 [
   "v",
-  <VALIDATOR_ID>,
-  <EXPECTED_BLOCK_HEIGHT>
+  "<VALIDATOR_ID>",
+  "<EXPECTED_BLOCK_HEIGHT>"
 ]
 ```
 
@@ -350,8 +350,8 @@ In order to use this validator you can attach the following validator tag:
 ```json
 [
   "v",
-  <VALIDATOR_ID>,
-  <CANONICAL_URL>
+  "<VALIDATOR_ID>",
+  "<CANONICAL_URL>"
 ]
 ```
 
@@ -435,7 +435,7 @@ This validator can be used by simply mentioning the validator ID since all the d
 ```json
 [
   "v",
-  <VALIDATOR_ID>
+  "<VALIDATOR_ID>"
 ]
 ```
 
@@ -457,19 +457,19 @@ A token flow event has the following form:
   ...,
   "kind": 1001,
   ...,
-  "pubkey": <PUBKEY>,
+  "pubkey": "<PUBKEY>",
   ...,
   "tags": [
     ...,
-    ["y", <TOKEN_ID>],  // used input IDs
+    ["y", "<TOKEN_ID>"],  // used input IDs
     ...,
-    ["z", <TOKEN_ID>],  // used output IDs
+    ["z", "<TOKEN_ID>"],  // used output IDs
     ...
-    ["p", <DESTINATION>],  // mentioned destination pubkeys --- NOTE: the recommended relay URL, if given, is ignored
+    ["p", "<DESTINATION>"],  // mentioned destination pubkeys --- NOTE: the recommended relay URL, if given, is ignored
     ...
   ],
   ...,
-  "content": <CONTENT>,  // the JSON string serialization of the content object detailed below
+  "content": "<CONTENT>",  // the JSON string serialization of the content object detailed below
   ...
 }
 ```
@@ -481,18 +481,18 @@ where the content follows:
   "inputs": [
     ...,
     {
-      "id" <TOKEN_ID>,  // UUIDv4 --- the ID of an unburned output
-      "nonce": <NONCE>  // NONCE --- the NONCE of said output, such that SHA-256(NONCE) == Output(ID).commitment
+      "id": "<TOKEN_ID>",  // UUIDv4 --- the ID of an unburned output
+      "nonce": "<NONCE>"  // NONCE --- the NONCE of said output, such that SHA-256(NONCE) == Output(ID).commitment
     }
     ...
   ],
   "outputs": [
     ...,
     {
-      "id": <TOKEN_ID>,              // UUIDv4 --- a random ID to associate to this output
-      "commitment": <COMMITMENT>,    // SHA-256 of NONCE --- public commitment to the value of NONCE
-      "secret": <SECRET>,            // Encrypt(DESTINATION, NONCE) --- private revelation of the value of NONCE
-      "destination": <DESTINATION>   // PubKey --- the PubKey of the output's destination,
+      "id": "<TOKEN_ID>",              // UUIDv4 --- a random ID to associate to this output
+      "commitment": "<COMMITMENT>",    // SHA-256 of NONCE --- public commitment to the value of NONCE
+      "secret": "<SECRET>",            // Encrypt(DESTINATION, NONCE) --- private revelation of the value of NONCE
+      "destination": "<DESTINATION>"   // PubKey --- the PubKey of the output's destination,
     },
     ...
   ]
