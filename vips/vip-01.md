@@ -33,9 +33,10 @@ The execution environment will vary depending on the actual type of execution ma
 ```javascript
 try {
   return Function(
-    "event",
-    "tagIndex",
-    '"use strict";' + validatorEvent.content,
+    '"use strict";'
+      + 'const event = arguments[0];'
+      + 'const tagIndex = arguments[1];'
+      + validatorEvent.content,
   ).apply(
     {},
     [
@@ -55,9 +56,10 @@ where `event` and `tagIndex` are as above, and `validatorEvent` is the validator
 > ```javascript
 > try {
 >   return await AsyncFunction(
->     "event",
->     "tagIndex",
->     '"use strict";' + validatorEvent.content,
+>     '"use strict";'
+>       + 'const event = arguments[0];'
+>       + 'const tagIndex = arguments[1];'
+>       + validatorEvent.content,
 >   ).apply(
 >     {},
 >     [
