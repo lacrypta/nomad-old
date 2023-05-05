@@ -1114,6 +1114,8 @@ Although there's no need to define a governance mechanism in its entirety here, 
 - **Proposal discussion and validation:** discussion of the proposal should be conducted in an open and transparent manner, ideally within the NOSTR network itself (perhaps via comments to the original VIP document).
 - **Proposal voting and acceptance:** clients and end users should then vote on the VIP proposal, voting should be transparent and open, ideally tracked in the NOSTR network itself as well.
 
+See the [`vips`](../vips) directory to query all current VIPs.
+
 #### II.2. Validator Metadata
 
 Mechanisms for associating semantically-specific metadata to validators need to eventually be provided.
