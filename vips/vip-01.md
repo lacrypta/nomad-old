@@ -34,6 +34,8 @@ The `<LANGUAGE>` placeholder **MUST** be `"javascript"`.
 
 The validator definition event's `.content` **MUST** be ES6-compliant.
 
+The `event` and `tagIndex` parameters are passed as pre-defined variables to the validator.
+
 Return values are interpreted as JavaScript booleans.
 Uncaught exceptions are considered `false` return values.
 
@@ -42,14 +44,14 @@ The execution environment will vary depending on the actual type of execution ma
 ```javascript
 try {
   return Function(
+    "event",
+    "tagIndex",
     '"use strict";' + validatorEvent.content,
   ).apply(
     {},
     [
-      JSON.stringify({
-        "event": event,
-        "tagIndex": tagIndex,
-      }),
+      event,
+      tagIndex,
     ],
   );
 } catch {
@@ -64,14 +66,14 @@ where `event` and `tagIndex` are as above, and `validatorEvent` is the validator
 > ```javascript
 > try {
 >   return await AsyncFunction(
+>     "event",
+>     "tagIndex",
 >     '"use strict";' + validatorEvent.content,
 >   ).apply(
 >     {},
 >     [
->       JSON.stringify({
->         "event": event,
->         "tagIndex": tagIndex,
->       }),
+>       event,
+>       tagIndex,
 >     ],
 >   );
 > } catch {

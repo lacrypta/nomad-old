@@ -161,22 +161,19 @@ Any number of validator tags can be attached to an event.
 Validating an event consists of retrieving all of its validator tags and executing the corresponding validators.
 To do this, clients should query for the event ID mentioned in the validator tag, read the `"v-language"` tag to ensure support (both for the language and the capabilities mentioned therein), and load the `.content` field as source code to be executed.
 
-With the set up taken care of, the source code will get passed a JSON string of the form:
+With the set up taken care of, the source code will get passed two parameters:
 
-```json
-{
-  ...,
-  "event": "<EVENT_TO_VALIDATE>",
-  ...,
-  "tagIndex": "<VALIDATOR_TAG_INDEX>",
-  ...
-}
+- **`event`:** the whole event to validate, and
+- **`tagIndex`:** the index (0 based) of the tag that triggered this particular validation (ie. the index into the event's `.tag` field where the validator can find the `"v"` tag that corresponds to this validation effort).
+
+The way in which this is done depends on the particular `"v-language"` tag used, different languages leveraging different internal mechanics to do so.
+In pseudocode, this would look like:
+
+```text
+Validator(event, tagIndex)
 ```
 
-the `.event` and `.tagIndex` fields are **REQUIRED**, but clients may include additional fields.
-
-The value of the `<EVENT_TO_VALIDATE>` placeholder must consist of the event being validated (ie. the one sporting the `"v"` tag).
-The value of the `<VALIDATOR_TAG_INDEX>` placeholder must consist of an integer indicating the index (0 based) of the tag that triggered this particular validation (ie. the index into the event's `.tag` field where the validator can find the `"v"` tag that corresponds to this validation effort).
+Note that whatever method is used by specific languages, care must be taken to keep them future-proof, as the set of passed arguments may be expanded in the future.
 
 The validator source code is now run and its return value obtained: if the return value represents a **TRUE** value, the event is said to have _passed_ validation, if the return values represents a **FALSE** value, the event is said to have _failed_ validation.
 
@@ -286,8 +283,6 @@ By way of example, we present here a validator that will ensure the Bitcoin netw
 ```javascript
 // Requires the "XMLHttpRequest" and "Async" capabilities
 
-const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, and extract event and tagIndex
-
 const [ tagName, , expectedHeight ] = event.tags[tagIndex];  // extract the validator tag name and expected height from the event
 
 if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
@@ -323,8 +318,6 @@ One such validator can be very simply implemented:
 
 ```javascript
 // Requires the "XMLHttpRequest" and "Async" capabilities
-
-const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, and extract event and tagIndex
 
 const [ tagName, , canonicalUrl ] = event.tags[tagIndex];  // extract the validator tag name and canonical content URL from the event
 
@@ -382,7 +375,6 @@ async function sha256toHex(data) {
   ;
 }
 
-const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, and extract event and tagIndex
 
 const [ tagName ] = event.tags[tagIndex];  // extract the validator tag from the event
 
@@ -688,8 +680,6 @@ function tagValues(tagName, event) {
 }
 
 
-const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, extract event and tagIndex
-
 const [ tagName ] = event.tags[tagIndex];  // extract the validator tag name
 
 if (tagName !== "v") {      // (OPTIONAL) verify that we are indeed passed a validator tag
@@ -896,8 +886,6 @@ function fetchOutputs(ids, until) {
 }
 
 
-const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, extract event and tagIndex
-
 const [ tagName, , ...tokenIds ] = event.tags[tagIndex];  // extract the validator tag name and token IDs
 
 if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
@@ -972,7 +960,6 @@ function coalesce(datum, sentinel, replacement) {
   return datum === sentinel ? replacement : datum;
 }
 
-const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, and extract event and tagIndex
 
 const [ tagName ] = event.tags[tagIndex];  // extract the validator tag from the event
 
