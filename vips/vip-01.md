@@ -91,7 +91,12 @@ The **`NostrValidate`** capability is implemented via a global class `NOSTR`, co
 
 ## 4. Available Built-In Objects
 
-The following table details what pre-defined objects are made available by default (note the absence of `globalThis` and `eval()`: these would enable the validator code to potentially break free from containment and are thus simply not provided at all; furthermore, note the absence of the default `Date` constructor and of `Date.now()`: these would make the validators non-pure):
+The following table details what pre-defined objects are made available by default.
+Note the absence of the following pre-defined objects:
+
+- **`globalThis` and `eval()`:** this would enable the validator code to potentially break free from containment.
+- **`Date()` and `Date.now()`:** these would make the validators non-pure.
+- **`Math.random()`:** the [ECMAScript standard](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-math.random) fails to specify a generator to use, and provides no way of seeding it; instead of unilaterally over-specifying a generator, we'd rather not provide a default one and delegate that specification to capabilities.
 
 | Symbol Name                                           |
 | ----------------------------------------------------- |
@@ -270,7 +275,6 @@ The following table details what pre-defined objects are made available by defau
 | `Math.max()`                                          |
 | `Math.min()`                                          |
 | `Math.pow()`                                          |
-| `Math.random()`                                       |
 | `Math.round()`                                        |
 | `Math.sign()`                                         |
 | `Math.sin()`                                          |

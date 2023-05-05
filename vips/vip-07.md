@@ -27,15 +27,16 @@ The `Async` capability is **REQUIRED** for this capability to be available.
 
 ## 2. Available Symbols
 
-The following table details what symbols are made available by this capability:
+The following table details what symbols are made available by this capability.
+Note the absence of the following symbols:
+
+- **`Crypto.getRandomValues()` and `Crypto.randomUUID()`:** as was the case for `Math.random()`, the [Web Crypto API Specification](https://w3c.github.io/webcrypto/#crypto-interface) fails to specify a concrete cryptographically secure random number generator.
 
 | Symbol Name                  |
 | ---------------------------- |
 | `crypto`                     |
 | `Crypto`                     |
 | `Crypto.subtle`              |
-| `Crypto.getRandomValues()`   |
-| `Crypto.randomUUID()`        |
 | `CryptoKey`                  |
 | `CryptoKey.type`             |
 | `CryptoKey.extractable`      |
