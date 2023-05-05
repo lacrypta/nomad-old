@@ -51,7 +51,7 @@ try {
 
 where `event` and `tagIndex` are as above, and `validatorEvent` is the validator definition event referred to by ID in the event's `"v"` tag.
 
-> If the client supports the `Async` capability (see below) and the validator requests the `Async` capability, this expression becomes:
+> If the client supports the `Async` capability (see [VIP-02](vip-02.md)) and the validator requests the `Async` capability, this expression becomes:
 >
 > ```javascript
 > try {
