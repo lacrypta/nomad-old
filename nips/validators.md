@@ -964,6 +964,18 @@ As a concrete example of this, consider the `kind:6969` "polls event" proposed i
 A validator validating the _schema_ of one such event can very easily be coded thus:
 
 ```javascript
+/**
+ * Coalesce the given datum, by using the given replacement when it equals the given sentinel
+ *
+ * @param {a} datum - Datum to coalesce
+ * @param {a} sentinel - The sentinel to trigger replacement
+ * @param {a} replacement - The replacement value
+ * @return {a}  The result of the coalescing operation
+ */
+function coalesce(datum, sentinel, replacement) {
+  return datum === sentinel ? replacement : datum;
+}
+
 const { event, tagIndex } = JSON.parse(arguments[0]);  // decode the input argument, and extract event and tagIndex
 
 const [ tagName ] = event.tags[tagIndex];  // extract the validator tag from the event
@@ -1003,9 +1015,9 @@ const consensusThreshold = event.tags               // although NIP-69 is unclea
 ;                                                   // keeping only the highest of them
 
 // clamp to usable values
-const usableMaximumValue       = valueMaximum       === -Infinity ?  Infinity : valueMaximum      ;
-const usableMinimumValue       = valueMinimum       ===  Infinity ?         0 : valueMinimum      ;
-const usableConsensusThreshold = consensusThreshold === -Infinity ?         0 : consensusThreshold;
+const usableMaximumValue       = coalesce(valueMaximum      , -Infinity, Infinity);
+const usableMinimumValue       = coalesce(valueMinimum      ,  Infinity,        0);
+const usableConsensusThreshold = coalesce(consensusThreshold, -Infinity,        0);
 
 const closedAt = event.tags                    // although NIP-69 is unclear as to how to manage
   .filter(tag => tag[0] === "closed_at")       // multiple "closed_at" tags, we take the conservative
