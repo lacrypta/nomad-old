@@ -34,6 +34,7 @@
   - [9.4. SNTs: Simple NOSTR Tokens](#94-snts-simple-nostr-tokens)
   - [9.5. Client-Side Event Hiding](#95-client-side-event-hiding)
   - [9.6. Transport and Application Layer Decoupling](#96-transport-and-application-layer-decoupling)
+  - [9.7. Compositional Validation](#97-compositional-validation)
 - [10. FAQ](#10-faq)
 - [Appendixes](#appendixes)
   - [I. Implementation Considerations](#i-implementation-considerations)
@@ -1049,6 +1050,54 @@ return event.content !== ""                              // check that the conte
 > Incidentally, whilst reviewing this validator with an event in the wild (ie. [`382f8ab7e75d13485037a4cb6198124e302f2e39f1333f72ae20a1f7c03094b5`](https://nostrexplorer.com/e/382f8ab7e75d13485037a4cb6198124e302f2e39f1333f72ae20a1f7c03094b5)) it became apparent that _both_ the `"e"` and `"p"` tags are indeed optional, contradicting the linked NIP candidate.
 
 The open question of what exactly constitutes application layer functionality is perhaps beyond the scope of this work, but a rule of thumb may be: _if the would-be NIP would only concern clients, there's a good chance it is indeed application layer functionality_.
+
+### 9.7. Compositional Validation
+
+Validators can be composed simply by including several `"v"` tags within the same message.
+Somewhat akin to programming languages' "interfaces", validators can be attached to messages indicating behavioral contracts.
+
+In order to validate that a specific message must behave in a specific collection of ways, a simple validator can be devised that simply validates that a given list of validators are indeed applied in turn to the message in question:
+
+```javascript
+const [ tagName, , ...requiredValidators ] = event.tags[tagIndex];  // extract the validator tag, and required validators from the event
+
+if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
+  return false;         // fail if we're not
+}                       //
+
+if (!requiredValidators.every(                         // check that the given validators are in order and non-repeating
+  (x, i) => 0 === i || requiredValidators[i - 1] < x)  //
+) {                                                    //
+  return false;                                        //
+}                                                      //
+
+const attachedValidators = new Set(  // extract all actually attached validators
+  event.tags                         //
+    .filter(tag => tag[0] === "v")   //
+    .map(tag => tag[1])              //
+);                                   //
+
+for (const requiredValidator of requiredValidators) {  // check that all required validators
+  if (!attachedValidators.has(requiredValidator)) {    // are indeed attached to this event
+    return false;                                      // and fail if not
+  }                                                    //
+}                                                      //
+
+return true;  // everything looks fine
+```
+
+Using this validator is very simple:
+
+```json
+[
+  "v",
+  "<COMPOSITIONAL_VALIDATOR_EVENT_ID>",
+  "<REQUIRED_VALIDATOR_EVENT_ID>",
+  ...
+]
+```
+
+Enumerating each required validator event ID in increasing lexicographical order.
 
 ## 10. FAQ
 
