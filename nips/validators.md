@@ -287,7 +287,7 @@ const [ tagName, , expectedHeight ] = event.tags[tagIndex];  // extract the vali
 
 if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
   return false;         // fail if we're not
-}
+}                       //
 
 const url = `https://blockchain.info/block-height/${expectedHeight}`;  // the block-height query URL
 
@@ -323,10 +323,11 @@ const [ tagName, , canonicalUrl ] = event.tags[tagIndex];  // extract the valida
 
 if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
   return false;         // fail if we're not
-}
+}                       //
+
 if (event.kind !== 1111) {  // verify that we are indeed validating a validator
   return false;             // fail if we're not
-}
+}                           //
 
 const request = new XMLHttpRequest();           // build a new XMLHttpRequest
 request.open("GET", canonicalUrl, false);       // set up a synchronous GET request to the above URL
@@ -380,7 +381,7 @@ const [ tagName ] = event.tags[tagIndex];  // extract the validator tag from the
 
 if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
   return false;         // fail if we're not
-}
+}                       //
 
 // calculate the event ID according to NIP-01
 const calculatedId = await sha256toHex(
@@ -396,7 +397,7 @@ const calculatedId = await sha256toHex(
 
 if (calculatedId !== event.id) {  // if the calculated ID and the event ID aren't equal,
   return false;                   // then fail
-}
+}                                 //
 
 const difficulty = event.tags           // although NIP-13 is unclear as to how to manage
   .filter(tag => tag[0] === "nonce")    // multiple "nonce" tags, we take the conservative
@@ -449,9 +450,9 @@ A token flow event has the following form:
   ...,
   "tags": [
     ...,
-    ["y", "<TOKEN_ID>"],  // used input IDs
+    ["y", "<TOKEN_ID>"],     // used input IDs
     ...,
-    ["z", "<TOKEN_ID>"],  // used output IDs
+    ["z", "<TOKEN_ID>"],     // used output IDs
     ...
     ["p", "<DESTINATION>"],  // mentioned destination pubkeys --- NOTE: the recommended relay URL, if given, is ignored
     ...
@@ -470,7 +471,7 @@ where the deserialized content looks like:
     ...,
     {
       "id": "<TOKEN_ID>",  // UUIDv4 --- the ID of an unburned output
-      "nonce": "<NONCE>"  // NONCE --- the NONCE of said output, such that SHA-256(NONCE) == Output(ID).commitment
+      "nonce": "<NONCE>"   // NONCE --- the NONCE of said output, such that SHA-256(NONCE) == Output(ID).commitment
     }
     ...
   ],
@@ -682,9 +683,10 @@ function tagValues(tagName, event) {
 
 const [ tagName ] = event.tags[tagIndex];  // extract the validator tag name
 
-if (tagName !== "v") {      // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;             // fail if we're not
-}                           //
+if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
+  return false;         // fail if we're not
+}                       //
+
 if (event.kind !== 1001) {  // verify that we're being run on a Token Flow event
   return false;             // fail if we're not
 }                           //
@@ -735,12 +737,14 @@ if (fetchOutputs(Array.from(seenOutputs), event.created_at) !== []) {  // make s
   return false;                                                        // fail otherwise
 }                                                                      //
 
-if (!equalSets(taggedInputs, seenInputs)) {              // check that all seen inputs are tagged
-  return false;                                          // fail if not
-}                                                        //
-if (!equalSets(taggedOutputs, seenOutputs)) {            // check that all seen outputs are tagged
-  return false;                                          // fail if not
-}                                                        //
+if (!equalSets(taggedInputs, seenInputs)) {  // check that all seen inputs are tagged
+  return false;                              // fail if not
+}                                            //
+
+if (!equalSets(taggedOutputs, seenOutputs)) {  // check that all seen outputs are tagged
+  return false;                                // fail if not
+}                                              //
+
 if (!equalSets(taggedDestinations, seenDestinations)) {  // check that all seen destinations are tagged
   return false;                                          // fail if not
 }                                                        //
@@ -900,9 +904,10 @@ const outputs = fetchOutputs(                             // retrieve all output
   .filter(output => output.destination === event.pubkey)  // keep only those that come our way
 ;                                                         //
 
-if (outputs.length !== tokenIdsClean.length) {                          // verify we have them all
-  return false;                                                         // fail otherwise
-}                                                                       //
+if (outputs.length !== tokenIdsClean.length) {  // verify we have them all
+  return false;                                 // fail otherwise
+}                                               //
+
 if (fetchInputs(Array.from(tokenIdsClean), event.created_at) !== []) {  // verify no inputs are used
   return false;                                                         // fail otherwise
 }                                                                       //
@@ -968,16 +973,16 @@ if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validat
 }
 
 const pRelays = new Set(            // scan all "p" tags and extract the associated relays
-  event.tags
-    .filter(tag => tag[0] === "p")
-    .map(tag => tag[2])
-);
+  event.tags                        //
+    .filter(tag => tag[0] === "p")  //
+    .map(tag => tag[2])             //
+);                                  //
 
 const eRelays = new Set(            // scan all "e" tags and extract the associated relays
-  event.tags
-    .filter(tag => tag[0] === "e")
-    .map(tag => tag[2])
-);
+  event.tags                        //
+    .filter(tag => tag[0] === "e")  //
+    .map(tag => tag[2])             //
+);                                  //
 
 const valueMaximum = event.tags                 // although NIP-69 is unclear as to how to manage
   .filter(tag => tag[0] === "value_maximum")    // multiple "value_maximum" tags, we take the conservative
@@ -1009,9 +1014,9 @@ const closedAt = event.tags                    // although NIP-69 is unclear as 
 ;                                              // keeping only the lowest of them
 
 const pollOptions = event.tags              // extract all "poll_option" tag values
-  .filter(tag => tag[0] === "poll_option")
-  .map(tag => tag[1])
-;
+  .filter(tag => tag[0] === "poll_option")  //
+  .map(tag => tag[1])                       //
+;                                           //
 
 // check that if any "p" or "e" tags exist, they specify a single relay,
 // additionally, if they both do, check that they're equal
@@ -1038,7 +1043,7 @@ return event.content !== ""                              // check that the conte
   && event.created_at < closedAt                         // check that the poll has life to live
   && pollOptions.length === (new Set(pollOptions)).size  // check that there are no repeated poll options
   && 2 <= pollOptions.length                             // and that there are at least 2 of them
-;
+;                                                        //
 ```
 
 > Incidentally, whilst reviewing this validator with an event in the wild (ie. [`382f8ab7e75d13485037a4cb6198124e302f2e39f1333f72ae20a1f7c03094b5`](https://nostrexplorer.com/e/382f8ab7e75d13485037a4cb6198124e302f2e39f1333f72ae20a1f7c03094b5)) it became apparent that _both_ the `"e"` and `"p"` tags are indeed optional, contradicting the linked NIP candidate.
