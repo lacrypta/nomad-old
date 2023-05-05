@@ -14,6 +14,11 @@
 
 ---
 
+> &#x26a0; **NOTE:** this should be considered a _LAST RESORT_ capability to use, the ability to perform arbitrary calls to the outside world is both unwieldy and dangerous.
+> It is recommended to segregate access to specific external services into specific capabilities, and use those narrower interfaces in favor of this blunter instrument.
+
+---
+
 - [1. Capability Description](#1-capability-description)
 - [2. Available Symbols](#2-available-symbols)
 
