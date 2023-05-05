@@ -1058,7 +1058,7 @@ return event.content !== ""                              // check that the conte
 ;
 ```
 
-> Incidentally, whilst reviewing this validator with an event in the wild (ie. `382f8ab7e75d13485037a4cb6198124e302f2e39f1333f72ae20a1f7c03094b5`) it became apparent that _both_ the `"e"` and `"p"` tags are indeed optional, contradicting the linked NIP candidate.
+> Incidentally, whilst reviewing this validator with an event in the wild (ie. [`382f8ab7e75d13485037a4cb6198124e302f2e39f1333f72ae20a1f7c03094b5`](https://nostrexplorer.com/e/382f8ab7e75d13485037a4cb6198124e302f2e39f1333f72ae20a1f7c03094b5)) it became apparent that _both_ the `"e"` and `"p"` tags are indeed optional, contradicting the linked NIP candidate.
 
 The open question of what exactly constitutes application layer functionality is perhaps beyond the scope of this work, but a rule of thumb may be: _if the would-be NIP would only concern clients, there's a good chance it is indeed application layer functionality_.
 
