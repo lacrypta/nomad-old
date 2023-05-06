@@ -7,6 +7,7 @@
 `draft` `optional`
 
 `v-language:javascript`
+`v-language:javascript-unsafe-web-worker`
 
 ---
 
@@ -14,6 +15,8 @@
 - [2. `NostrRead` Capability](#2-nostrread-capability)
 - [3. `NostrValidate` Capability](#3-nostrvalidate-capability)
 - [4. Available Built-In Objects](#4-available-built-in-objects)
+- [Appendixes](#appendixes)
+  - [I. The `javascript-unsafe-web-worker` Language Placeholder](#i-the-javascript-unsafe-web-worker-language-placeholder)
 
 ---
 
@@ -759,3 +762,18 @@ Note the absence of the following pre-defined objects:
 | `Intl.Segmenter.prototype[@@toStringTag]`             |
 | `Intl.Segmenter.prototype.resolvedOptions()`          |
 | `Intl.Segmenter.prototype.segment()`                  |
+
+## Appendixes
+
+The appendix that follows deals with technical debugging capabilities.
+
+### I. The `javascript-unsafe-web-worker` Language Placeholder
+
+In order to provide quick ramp-up for browser-based debugging and testing, the following language placeholder is provided.
+
+Everything else **MUST** be as above, observing the following provisos for each section:
+
+- **[1. General Conventions](#1-general-conventions):** the `<LANGUAGE>` placeholder **MUST** be `javascript-unsafe-web-worker`.
+- **[2. `NostrRead` Capability](#2-nostrread-capability):** nothing changes.
+- **[3. `NostrValidate` Capability](#3-nostrvalidate-capability):** nothing changes.
+- **[4. Available Built-In Objects](#4-available-built-in-objects):** no specific blacklisting is provided, _all_ JavaScript built-in objects are exposed, as are all supported [Web APIs](https://developer.mozilla.org/en-US/docs/Web/API), irrespective of the particular capabilities declared.
