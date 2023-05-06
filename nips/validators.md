@@ -165,13 +165,13 @@ To do this, clients should query for the event ID mentioned in the validator tag
 With the set up taken care of, the source code will get passed two parameters:
 
 - **`event`:** the whole event to validate, and
-- **`tagIndex`:** the index (0 based) of the tag that triggered this particular validation (ie. the index into the event's `.tag` field where the validator can find the `"v"` tag that corresponds to this validation effort).
+- **`index`:** the index (0 based) of the tag that triggered this particular validation (ie. the index into the event's `.tag` field where the validator can find the `"v"` tag that corresponds to this validation effort).
 
 The way in which this is done depends on the particular `"v-language"` tag used, different languages leveraging different internal mechanics to do so.
 In pseudocode, this would look like:
 
 ```text
-Validator(event, tagIndex)
+Validator(event, index)
 ```
 
 Note that whatever method is used by specific languages, care must be taken to keep them future-proof, as the set of passed arguments may be expanded in the future.
@@ -284,11 +284,7 @@ By way of example, we present here a validator that will ensure the Bitcoin netw
 ```javascript
 // Requires the "XMLHttpRequest" and "Async" capabilities
 
-const [ tagName, , expectedHeight ] = event.tags[tagIndex];  // extract the validator tag name and expected height from the event
-
-if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;         // fail if we're not
-}                       //
+const expectedHeight = args[0];  // extract expected height from the event
 
 const url = `https://blockchain.info/block-height/${expectedHeight}`;  // the block-height query URL
 
@@ -320,11 +316,7 @@ One such validator can be very simply implemented:
 ```javascript
 // Requires the "XMLHttpRequest" and "Async" capabilities
 
-const [ tagName, , canonicalUrl ] = event.tags[tagIndex];  // extract the validator tag name and canonical content URL from the event
-
-if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;         // fail if we're not
-}                       //
+const canonicalUrl = args[0];  // extract the canonical content URL from the event
 
 if (event.kind !== 1111) {  // verify that we are indeed validating a validator
   return false;             // fail if we're not
@@ -377,12 +369,6 @@ async function sha256toHex(data) {
   ;
 }
 
-
-const [ tagName ] = event.tags[tagIndex];  // extract the validator tag from the event
-
-if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;         // fail if we're not
-}                       //
 
 // calculate the event ID according to NIP-01
 const calculatedId = await sha256toHex(
@@ -682,12 +668,6 @@ function tagValues(tagName, event) {
 }
 
 
-const [ tagName ] = event.tags[tagIndex];  // extract the validator tag name
-
-if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;         // fail if we're not
-}                       //
-
 if (event.kind !== 1001) {  // verify that we're being run on a Token Flow event
   return false;             // fail if we're not
 }                           //
@@ -891,13 +871,7 @@ function fetchOutputs(ids, until) {
 }
 
 
-const [ tagName, , ...tokenIds ] = event.tags[tagIndex];  // extract the validator tag name and token IDs
-
-if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;         // fail if we're not
-}                       //
-
-const tokenIdsClean = Set(tokenIds);                      // remove duplicates from input token IDs
+const tokenIdsClean = Set(args);                          // remove duplicates from input token IDs
 const outputs = fetchOutputs(                             // retrieve all outputs generating these
     Array.from(tokenIdsClean),                            // token IDs
     event.created_at                                      //
@@ -966,12 +940,6 @@ function coalesce(datum, sentinel, replacement) {
   return datum === sentinel ? replacement : datum;
 }
 
-
-const [ tagName ] = event.tags[tagIndex];  // extract the validator tag from the event
-
-if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;         // fail if we're not
-}
 
 const pRelays = new Set(            // scan all "p" tags and extract the associated relays
   event.tags                        //
@@ -1059,17 +1027,11 @@ Somewhat akin to programming languages' "interfaces", validators can be attached
 In order to validate that a specific message must behave in a specific collection of ways, a simple validator can be devised that simply validates that a given list of validators are indeed applied in turn to the message in question:
 
 ```javascript
-const [ tagName, , ...requiredValidators ] = event.tags[tagIndex];  // extract the validator tag, and required validators from the event
-
-if (tagName !== "v") {  // (OPTIONAL) verify that we are indeed passed a validator tag
-  return false;         // fail if we're not
-}                       //
-
-if (!requiredValidators.every(                         // check that the given validators are in order and non-repeating
-  (x, i) => 0 === i || requiredValidators[i - 1] < x)  //
-) {                                                    //
-  return false;                                        //
-}                                                      //
+if (!args.every(                         // check that the given validators are in order and non-repeating
+  (x, i) => 0 === i || args[i - 1] < x)  //
+) {                                      //
+  return false;                          //
+}                                        //
 
 const attachedValidators = new Set(  // extract all actually attached validators
   event.tags                         //
@@ -1077,11 +1039,11 @@ const attachedValidators = new Set(  // extract all actually attached validators
     .map(tag => tag[1])              //
 );                                   //
 
-for (const requiredValidator of requiredValidators) {  // check that all required validators
-  if (!attachedValidators.has(requiredValidator)) {    // are indeed attached to this event
-    return false;                                      // and fail if not
-  }                                                    //
-}                                                      //
+for (const arg of args) {              // check that all required validators
+  if (!attachedValidators.has(arg)) {  // are indeed attached to this event
+    return false;                      // and fail if not
+  }                                    //
+}                                      //
 
 return true;  // everything looks fine
 ```

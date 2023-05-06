@@ -45,7 +45,7 @@ Language VIPs **MUST** define:
 
 - The `<LANGUAGE>` placeholder value to use in a `"v-language"` tag.
 - The expected semantics of the `.content` field of a `"v"`-tagged event.
-- The manner in which the `event` and `tagIndex` arguments should be passed to the validator code.
+- The manner in which the `event` and `index` arguments should be passed to the validator code.
 - The manner in which the validator's return value should be interpreted (including any exceptional conditions that may arise).
 - The _functional_ specification of the validator's execution environment.
 - Any additional environmental considerations that should be observed (eg. global locale settings, seeds, etc.).

@@ -23,7 +23,7 @@ The `<LANGUAGE>` placeholder **MUST** be `"javascript"`.
 
 The validator definition event's `.content` **MUST** be ES6-compliant.
 
-The `event` and `tagIndex` parameters are passed as pre-defined variables to the validator.
+The `event` and `index` parameters are passed as pre-defined variables to the validator.
 
 Return values are interpreted as JavaScript booleans.
 Uncaught exceptions are considered `false` return values.
@@ -32,16 +32,21 @@ The execution environment will vary depending on the actual type of execution ma
 
 ```javascript
 try {
+  [ , , ...args ] = event.tags[index];
   return Function(
     '"use strict";'
       + 'const event = arguments[0];'
-      + 'const tagIndex = arguments[1];'
-      + validatorEvent.content,
+      + 'const validator = arguments[1];'
+      + 'const args = arguments[2];'
+      + 'const index = arguments[3];'
+      + validator.content,
   ).apply(
     {},
     [
       event,
-      tagIndex,
+      validator,
+      args,
+      index,
     ],
   );
 } catch {
@@ -49,22 +54,27 @@ try {
 }
 ```
 
-where `event` and `tagIndex` are as above, and `validatorEvent` is the validator definition event referred to by ID in the event's `"v"` tag.
+where `event` and `index` are as above, and `validator` is the validator definition event referred to by ID in the event's `"v"` tag.
 
 > If the client supports the `Async` capability (see [VIP-02](vip-02.md)) and the validator requests the `Async` capability, this expression becomes:
 >
 > ```javascript
 > try {
+>   [ , , ...args ] = event.tags[index];
 >   return await AsyncFunction(
 >     '"use strict";'
 >       + 'const event = arguments[0];'
->       + 'const tagIndex = arguments[1];'
->       + validatorEvent.content,
+>       + 'const validator = arguments[1];'
+>       + 'const args = arguments[2];'
+>       + 'const index = arguments[3];'
+>       + validator.content,
 >   ).apply(
 >     {},
 >     [
 >       event,
->       tagIndex,
+>       validator,
+>       args,
+>       index,
 >     ],
 >   );
 > } catch {
