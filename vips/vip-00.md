@@ -75,9 +75,10 @@ Index of all defined VIPs:
 
 List of defined `"v-language"` tags:
 
-| Language     | VIP             |
-| ------------ | --------------- |
-| `javascript` | [01](vip-01.md) |
+| Language                       | VIP             |
+| ------------------------------ | --------------- |
+| `javascript`                   | [01](vip-01.md) |
+| `javascript-unsafe-web-worker` | [01](vip-01.md) |
 
 List of defined capabilities and their associated language:
 
