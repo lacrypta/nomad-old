@@ -41,7 +41,6 @@ try {
       + 'const event = arguments[0];'
       + 'const validator = arguments[1];'
       + 'const args = arguments[2];'
-      + 'const index = arguments[3];'
       + validator.content,
   ).apply(
     {},
@@ -49,7 +48,6 @@ try {
       event,
       validator,
       args,
-      index,
     ],
   );
 } catch {
@@ -69,7 +67,6 @@ where `event` and `index` are as above, and `validator` is the validator definit
 >       + 'const event = arguments[0];'
 >       + 'const validator = arguments[1];'
 >       + 'const args = arguments[2];'
->       + 'const index = arguments[3];'
 >       + validator.content,
 >   ).apply(
 >     {},
@@ -77,7 +74,6 @@ where `event` and `index` are as above, and `validator` is the validator definit
 >       event,
 >       validator,
 >       args,
->       index,
 >     ],
 >   );
 > } catch {
