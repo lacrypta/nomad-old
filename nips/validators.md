@@ -35,6 +35,7 @@
   - [9.5. Client-Side Event Hiding](#95-client-side-event-hiding)
   - [9.6. Transport and Application Layer Decoupling](#96-transport-and-application-layer-decoupling)
   - [9.7. Compositional Validation](#97-compositional-validation)
+  - [9.8. Guaranteed Deletion](#98-guaranteed-deletion)
 - [10. FAQ](#10-faq)
 - [Appendixes](#appendixes)
   - [I. Implementation Considerations](#i-implementation-considerations)
@@ -1060,6 +1061,54 @@ Using this validator is very simple:
 ```
 
 Enumerating each required validator event ID in increasing lexicographical order.
+
+### 9.8. Guaranteed Deletion
+
+[NIP-09](https://github.com/nostr-protocol/nips/blob/master/09.md) deletion events may be broadcast without proper validation, since relays may not have all the required data.
+On the client's side however, we _do_ have all the data needed, thus, a simple validator performing delete checks can be implemented like:
+
+```javascript
+const NON_DELETABLE_KINDS = new Set([5, 1111, /* ... */]);
+
+return NON_DELETABLE_KINDS.has(event.kind) || Nostr.read([
+  {
+    "kinds": [5],
+    "#e": event.id,
+    "authors": [event.pubkey],
+  }
+]).length === 0;
+```
+
+This not only implements [NIP-09](https://github.com/nostr-protocol/nips/blob/master/09.md) in userland, but it also guarantees that certain events are not tagged as deleted and those deleted will remain so irrespective of relay forwarding policies.
+Even more so, the range of non-deletable kinds can be tuned independently (notice the presence of `kind:5`, as per the spec, and `kind:1111` as per the current spec).
+
+Furthermore, we can very easily provide the elusive [_undelete_](https://github.com/nostr-protocol/nips/blob/master/09.md#deleting-a-deletion) functionality, simply by validating the `NostrRead` return values:
+
+```javascript
+/**
+ * Retrieve the valid NOSTR events selected by the given filter
+ *
+ * @param {object[]} filters - Filter to apply
+ * @return {object[]}  The resulting events
+ */
+function nostrReadValidated(filters) {
+  return NOSTR.read(filter).filter(NOSTR.validate);
+}
+
+
+const NON_DELETABLE_KINDS = new Set([1111, /* ... */]);
+
+return NON_DELETABLE_KINDS.has(event.kind) || nostrReadValidated([
+  {
+    "kinds": [5],
+    "#e": event.id,
+    "authors": [event.pubkey],
+  }
+]).length === 0;
+```
+
+This allows us to delete a deletion event and have the effect cascade throughout the deletion chain (note now the _absence_ of `kind:5`).
+Needless to say, whenever the `NostrValidate` capability is used, attention should be paid to the resulting nested validation depth on the client's side.
 
 ## 10. FAQ
 
