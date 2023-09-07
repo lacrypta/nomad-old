@@ -399,7 +399,7 @@ let num0s = 0;  // the number of leading 0s
 for (let i = 0; i < 32; i += 8) {
   const currentInt = parseInt(event.id.substring(i, i + 8), 16);
   num0s += Math.clz32(currentInt);
-  if (!currentInt) {
+  if (currentInt) {
     break;
   }
 }
