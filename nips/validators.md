@@ -100,28 +100,28 @@ A validator definition event's `.tags` field **MUST** include ONE AND ONLY ONE `
 ```json
 [
   "v-language",
-  "<LANGUAGE>",
-  "<CAPABILITY>",
+  "{LANGUAGE}",
+  "{CAPABILITY}",
   ...
 ]
 ```
 
-The `<LANGUAGE>` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones alluded to in [Appendix III](#iii-recognized-v-language-tags), although clients can support languages not explicitly alluded to therein, and said set of languages may be expanded upon at a later time.
+The `{LANGUAGE}` placeholder **MUST** be a string, and it **SHOULD** equal one of the ones alluded to in [Appendix III](#iii-recognized-v-language-tags), although clients can support languages not explicitly alluded to therein, and said set of languages may be expanded upon at a later time.
 
-The `<CAPABILITY>` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary strings; if given, though, they **SHOULD** correspond to those alluded to in [Appendix III](#iii-recognized-v-language-tags) in accordance to the value of the `<LANGUAGE>` placeholder.
+The `{CAPABILITY}` placeholders **MAY** be omitted altogether if not needed, and they consist of an arbitrary number of arbitrary strings; if given, though, they **SHOULD** correspond to those alluded to in [Appendix III](#iii-recognized-v-language-tags) in accordance to the value of the `{LANGUAGE}` placeholder.
 
-A validator definition event's `.content` field **MUST** contain source code expressed in the `<LANGUAGE>` specified in the `"v-language"` tag, possibly making use of any `<CAPABILITY>` provided.
+A validator definition event's `.content` field **MUST** contain source code expressed in the `{LANGUAGE}` specified in the `"v-language"` tag, possibly making use of any `{CAPABILITY}` provided.
 
 A validator definition event's `.tags` field **MAY** contain ONE OR MORE `"v-hint"` tags, conforming to the following format:
 
 ```json
 [
   "v-hint",
-  "<HINT>"
+  "{HINT}"
 ]
 ```
 
-The `<HINT>` placeholder **SHOULD** be one of:
+The `{HINT}` placeholder **SHOULD** be one of:
 
 - **`"CACHE"`:** the presence of this hint lets the client know that the validator's result can safely be cached (ie. the same event ID will yield the same result),
 - **`"FRESH"`:** the presence of this hint lets the client know that the validator's result can _NOT_ safely be cached (ie. the same event ID won't necessarily yield the same result),
@@ -146,15 +146,15 @@ A _validator tag_ is a NOSTR tag using the single-letter **`"v"`** conforming to
 ```json
 [
   "v",
-  "<VALIDATOR_DEFINITION_EVENT_ID>",
-  "<ADDITIONAL_ARGUMENT>",
+  "{VALIDATOR_DEFINITION_EVENT_ID}",
+  "{ADDITIONAL_ARGUMENT}",
   ...
 ]
 ```
 
-The `<VALIDATOR_DEFINITION_EVENT_ID>` **MUST** belong to an event of `kind:1111`.
+The `{VALIDATOR_DEFINITION_EVENT_ID}` **MUST** belong to an event of `kind:1111`.
 
-The `<ADDITIONAL_ARGUMENT>` values **MAY** be omitted altogether if not needed.
+The `{ADDITIONAL_ARGUMENT}` values **MAY** be omitted altogether if not needed.
 
 Any number of validator tags can be attached to an event.
 
@@ -210,13 +210,13 @@ Clients **MUST** provide validators with a NOSTR querying facility identified wi
 The pseudocode for such a capability call would look like:
 
 ```text
-NostrRead((<FILTER>, ... ))
+NostrRead(({FILTER}, ... ))
 ```
 
 (where additional filters are optional), without an explicit relay, or
 
 ```text
-NostrRead((<FILTER>, ... ), <RELAY_URL>)
+NostrRead(({FILTER}, ... ), {RELAY_URL})
 ```
 
 passing an explicit relay URL.
@@ -224,7 +224,7 @@ The return value would look like:
 
 ```text
 (
-  <EVENT>,
+  {EVENT},
   ...
 )
 ```
@@ -300,8 +300,8 @@ One would use such a validator with the given validator tag:
 ```json
 [
   "v",
-  "<VALIDATOR_ID>",
-  "<EXPECTED_BLOCK_HEIGHT>"
+  "{VALIDATOR_ID}",
+  "{EXPECTED_BLOCK_HEIGHT}"
 ]
 ```
 
@@ -334,8 +334,8 @@ In order to use this validator you can attach the following validator tag:
 ```json
 [
   "v",
-  "<VALIDATOR_ID>",
-  "<CANONICAL_URL>"
+  "{VALIDATOR_ID}",
+  "{CANONICAL_URL}"
 ]
 ```
 
@@ -412,7 +412,7 @@ This validator can be used by simply mentioning the validator ID since all the d
 ```json
 [
   "v",
-  "<VALIDATOR_ID>"
+  "{VALIDATOR_ID}"
 ]
 ```
 
@@ -434,19 +434,19 @@ A token flow event has the following form:
   ...,
   "kind": 1001,
   ...,
-  "pubkey": "<PUBKEY>",
+  "pubkey": "{PUBKEY}",
   ...,
   "tags": [
     ...,
-    ["y", "<TOKEN_ID>"],     // used input IDs
+    ["y", "{TOKEN_ID}"],     // used input IDs
     ...,
-    ["z", "<TOKEN_ID>"],     // used output IDs
+    ["z", "{TOKEN_ID}"],     // used output IDs
     ...
-    ["p", "<DESTINATION>"],  // mentioned destination pubkeys --- NOTE: the recommended relay URL, if given, is ignored
+    ["p", "{DESTINATION}"],  // mentioned destination pubkeys --- NOTE: the recommended relay URL, if given, is ignored
     ...
   ],
   ...,
-  "content": "<CONTENT>",  // the JSON string serialization of the content object detailed below
+  "content": "{CONTENT}",  // the JSON string serialization of the content object detailed below
   ...
 }
 ```
@@ -458,18 +458,18 @@ where the deserialized content looks like:
   "inputs": [
     ...,
     {
-      "id": "<TOKEN_ID>",  // UUIDv4 --- the ID of an unburned output
-      "nonce": "<NONCE>"   // NONCE --- the NONCE of said output, such that SHA-256(NONCE) == Output(ID).commitment
+      "id": "{TOKEN_ID}",  // UUIDv4 --- the ID of an unburned output
+      "nonce": "{NONCE}"   // NONCE --- the NONCE of said output, such that SHA-256(NONCE) == Output(ID).commitment
     }
     ...
   ],
   "outputs": [
     ...,
     {
-      "id": "<TOKEN_ID>",              // UUIDv4 --- a random ID to associate to this output
-      "commitment": "<COMMITMENT>",    // SHA-256 of NONCE --- public commitment to the value of NONCE
-      "secret": "<SECRET>",            // Encrypt(DESTINATION, NONCE) --- private revelation of the value of NONCE
-      "destination": "<DESTINATION>"   // PubKey --- the PubKey of the output's destination,
+      "id": "{TOKEN_ID}",              // UUIDv4 --- a random ID to associate to this output
+      "commitment": "{COMMITMENT}",    // SHA-256 of NONCE --- public commitment to the value of NONCE
+      "secret": "{SECRET}",            // Encrypt(DESTINATION, NONCE) --- private revelation of the value of NONCE
+      "destination": "{DESTINATION}"   // PubKey --- the PubKey of the output's destination,
     },
     ...
   ]
@@ -516,7 +516,7 @@ A validator for Token Flow events follows:
  *
  * Usage merely requires adding a tag of the form:
  *
- *     ["v", "<VALIDATOR_MESSAGE_ID>"]
+ *     ["v", "{VALIDATOR_MESSAGE_ID}"]
  *
  * to NOSTR Token Flow events.
  *
@@ -768,7 +768,7 @@ One such use case can in turn be realized by the following validator:
  *
  * Usage merely requires adding a tag of the form:
  *
- *     ["v", "<VALIDATOR_MESSAGE_ID>", "<TOKEN_ID_1>", "<TOKEN_ID_2>", ..., "<TOKEN_ID_N>", ...]
+ *     ["v", "{VALIDATOR_MESSAGE_ID}", "{TOKEN_ID_1}", "{TOKEN_ID_2}", ..., "{TOKEN_ID_N}", ...]
  *
  * to NOSTR events.
  *
@@ -898,8 +898,8 @@ In order to use ownership attestation, one would simply add the tag:
 ```json
 [
   "v",
-  "<OWNERSHIP_ATTESTATION_VALIDATOR_EVENT_ID>",
-  "<TOKEN_ID>",
+  "{OWNERSHIP_ATTESTATION_VALIDATOR_EVENT_ID}",
+  "{TOKEN_ID}",
   ...
 ]
 ```
@@ -1054,8 +1054,8 @@ Using this validator is very simple:
 ```json
 [
   "v",
-  "<COMPOSITIONAL_VALIDATOR_EVENT_ID>",
-  "<REQUIRED_VALIDATOR_EVENT_ID>",
+  "{COMPOSITIONAL_VALIDATOR_EVENT_ID}",
+  "{REQUIRED_VALIDATOR_EVENT_ID}",
   ...
 ]
 ```
@@ -1126,7 +1126,7 @@ Were we not to use a single-letter tag, filtering out the results client-side co
 This is so so that a validator can "find itself" in the event being validated.
 By providing the tag's index, the validator can look into the event's tags for the one being processed, extract the associated event ID as its own (if needed), and pick up the additional arguments therein.
 
-**What's the use of the validator tag `<ADDITIONAL_ARGUMENT>` placeholders?**
+**What's the use of the validator tag `{ADDITIONAL_ARGUMENT}` placeholders?**
 
 This allows a client to construct an event that will forward different parameters to different validators, were we not to have this, we would need to find another place to put these and this would require either encroaching into the `.content` field or defining a new field to hold these (or have validators "bake-in" all the required parameters, which would result in an explosion of algorithmically identical validators differing solely on actual arguments passed).
 
