@@ -1107,7 +1107,7 @@ return NON_DELETABLE_KINDS.has(event.kind) || nostrReadValidated([
 ]).length === 0;
 ```
 
-This allows us to delete a deletion event and have the effect cascade throughout the deletion chain (note now the _absence_ of `kind:5`).
+This allows us to delete a deletion event and have the effect cascade throughout the deletion chain (note now the _absence_ of `kind:5` in the `NON_DELETABLE_KINDS` constant).
 Needless to say, whenever the `NostrValidate` capability is used, attention should be paid to the resulting nested validation depth on the client's side.
 
 ## 10. FAQ
