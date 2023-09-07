@@ -230,7 +230,7 @@ The return value would look like:
 ```
 
 Of course, each validator language will demand their own calling conventions and specifics, as will specify the actual result values.
-Note that specific languages **MAY NOT** chose to not provide this specific capability: it is required to exist for them all in one form or another.
+Note that specific languages **MAY NOT** choose to not provide this specific capability: it is required to exist for them all in one form or another.
 In [Appendix III](#iii-recognized-v-language-tags), each recognized language will specify how to access this capability.
 
 This capability allows for validators to perform introspection on the NOSTR network.
@@ -247,7 +247,7 @@ NostrValidate(event)
 The return value would simply consist of the resulting boolean value.
 
 Of course, each validator language will demand their own calling conventions and specifics, as will specify the actual result values.
-Note that specific languages **MAY NOT** chose to not provide this specific capability: it is required to exist for them all in one form or another.
+Note that specific languages **MAY NOT** choose to not provide this specific capability: it is required to exist for them all in one form or another.
 In [Appendix III](#iii-recognized-v-language-tags), each recognized language will specify how to access this capability.
 
 This capability allows for validators to perform cascaded validation on queried events.
