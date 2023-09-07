@@ -323,10 +323,10 @@ if (event.kind !== 1111) {  // verify that we are indeed validating a validator
   return false;             // fail if we're not
 }                           //
 
-const request = new XMLHttpRequest();           // build a new XMLHttpRequest
-request.open("GET", canonicalUrl, false);       // set up a synchronous GET request to the above URL
-request.send();                                 // execute it
-return request.responseText === event.content;  // compare it against the event's content
+const request = new XMLHttpRequest();                       // build a new XMLHttpRequest
+request.open("GET", canonicalUrl, false);                   // set up a synchronous GET request to the above URL
+request.send();                                             // execute it
+return request.responseText === JSON.parse(event.content);  // compare it against the event's content
 ```
 
 In order to use this validator you can attach the following validator tag:
